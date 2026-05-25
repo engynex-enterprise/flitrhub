@@ -364,6 +364,71 @@ function ToggleRow({
   );
 }
 
+function QuickToggle({
+  icon: Icon,
+  label,
+  sublabel,
+  active,
+  onClick,
+  tone,
+}: {
+  icon: typeof SlidersHorizontal;
+  label: string;
+  sublabel: string;
+  active: boolean;
+  onClick: () => void;
+  tone: "gold" | "emerald";
+}) {
+  const toneStyles = {
+    gold: {
+      activeBg: "bg-gradient-to-br from-amber-500/25 to-amber-700/10 border-amber-400/60 shadow-[0_0_0_2px_rgba(245,180,80,0.18)]",
+      icon: "text-gold",
+      iconBg: "bg-amber-500/15",
+    },
+    emerald: {
+      activeBg: "bg-gradient-to-br from-emerald-500/25 to-emerald-700/10 border-emerald-400/60 shadow-[0_0_0_2px_rgba(80,200,140,0.18)]",
+      icon: "text-emerald-400",
+      iconBg: "bg-emerald-500/15",
+    },
+  }[tone];
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition-all",
+        active
+          ? toneStyles.activeBg
+          : "border-border bg-card hover:border-primary/30 hover:bg-accent"
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+            active ? toneStyles.iconBg : "bg-muted"
+          )}
+        >
+          <Icon
+            className={cn(
+              "h-3.5 w-3.5 transition-colors",
+              active ? toneStyles.icon : "text-muted-foreground"
+            )}
+          />
+        </span>
+        {active && (
+          <span className="inline-flex h-4 items-center rounded-full bg-primary px-1.5 text-[9px] font-bold uppercase text-primary-foreground">
+            On
+          </span>
+        )}
+      </div>
+      <p className="text-xs font-semibold">{label}</p>
+      <p className="text-[10px] text-muted-foreground">{sublabel}</p>
+    </button>
+  );
+}
+
 export function FiltersOpenButton({
   onClick,
   activeCount,

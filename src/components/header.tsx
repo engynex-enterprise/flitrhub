@@ -1,7 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bell, Heart, LogIn, LogOut, MessageSquare, Plus, Settings, User } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  LogIn,
+  LogOut,
+  MessageSquare,
+  Plus,
+  Repeat,
+  Settings,
+  User,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,8 +25,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CitySelector } from "@/components/city-selector";
+import { LoginDialog } from "@/components/login-dialog";
 import { useSession } from "@/lib/session";
 import { useChat } from "@/lib/chat-context";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   city: string;
@@ -25,9 +38,10 @@ interface HeaderProps {
 }
 
 export function Header({ city, onCityChange, favoritesCount, onCreatePost }: HeaderProps) {
-  const { user, isLoggedIn, login, logout } = useSession();
+  const { user, isLoggedIn, logout, switchRole } = useSession();
   const { chats } = useChat();
   const totalUnread = chats.reduce((n, c) => n + c.unread, 0);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -103,9 +117,19 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                     <AvatarImage src={user.avatar} alt="" />
                     <AvatarFallback>{user.name[0]}</AvatarFallback>
                   </Avatar>
+                  <span
+                    className={cn(
+                      "absolute -right-0.5 -bottom-0.5 inline-flex h-4 items-center justify-center rounded-full px-1 text-[8px] font-bold uppercase ring-2 ring-background",
+                      user.role === "provider"
+                        ? "bg-gradient-gold text-amber-950"
+                        : "bg-primary text-primary-foreground"
+                    )}
+                  >
+                    {user.role === "provider" ? "Anun" : "Cli"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
+              <DropdownMenuContent className="w-60" align="end">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-semibold leading-none">
@@ -113,6 +137,11 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
+                    </p>
+                    <p className="pt-1.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                      {user.role === "provider"
+                        ? "Cuenta anunciante"
+                        : "Cuenta cliente"}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -129,6 +158,10 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                     Configuración
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={switchRole}>
+                  <Repeat className="h-4 w-4" />
+                  Cambiar a {user.role === "provider" ? "cliente" : "anunciante"}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
@@ -143,17 +176,21 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             <>
               <Button
                 variant="ghost"
-                onClick={login}
+                onClick={() => setLoginOpen(true)}
                 className="hidden sm:inline-flex"
               >
                 <LogIn className="h-4 w-4" />
                 Iniciar sesión
               </Button>
-              <Button variant="brand">Crear cuenta</Button>
+              <Button asChild variant="brand">
+                <Link href="/signup">Crear cuenta</Link>
+              </Button>
             </>
           )}
         </div>
       </div>
+
+      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </header>
   );
 }

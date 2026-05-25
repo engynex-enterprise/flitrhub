@@ -182,7 +182,7 @@ export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) 
             selected={draft.service}
             onSelect={selectService}
             isLoggedIn={isLoggedIn}
-            onLogin={login}
+            onLogin={() => login("provider")}
             userEmail={user?.email}
             onCancel={() => onOpenChange(false)}
           />

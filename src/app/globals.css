@@ -106,21 +106,17 @@
     background: transparent;
   }
 
-  /* Discreet mode — blur all images by default; opt-out with .no-blur. */
+  /* Discreet mode — defense in depth: heavy filter + opaque cover.
+   * Even if a <DiscreetCover /> isn't rendered, the image alone is
+   * unrecognizable. There's no peek-on-hover — discreet means discreet. */
   body.discreet-mode img:not(.no-blur),
-  body.discreet-mode .no-blur-children img,
   body.discreet-mode video {
-    filter: blur(20px) saturate(0.45) brightness(0.75);
-    transition: filter 0.3s ease;
+    filter: blur(40px) saturate(0) brightness(0.35) contrast(0.6);
+    transition: filter 0.2s ease;
   }
   body.discreet-mode .no-blur,
   body.discreet-mode .no-blur img {
     filter: none !important;
-  }
-  /* Press-and-hold (or hover on desktop) to peek a single image. */
-  body.discreet-mode .peekable:hover img:not(.no-blur),
-  body.discreet-mode .peekable:active img:not(.no-blur) {
-    filter: blur(2px) saturate(0.85) brightness(0.95);
   }
 }
 

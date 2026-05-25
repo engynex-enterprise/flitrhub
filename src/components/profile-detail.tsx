@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { TIER_STYLES } from "@/components/post-card";
 import { services } from "@/lib/services";
 import { formatCOP } from "@/lib/format";
@@ -186,6 +187,7 @@ export function ProfileDetail({ post, gallery }: ProfileDetailProps) {
                 className="object-cover"
                 priority
               />
+              <DiscreetCover size="lg" />
 
               <Badge
                 className={cn(
@@ -229,6 +231,7 @@ export function ProfileDetail({ post, gallery }: ProfileDetailProps) {
                   )}
                 >
                   <Image src={src} alt="" fill sizes="80px" className="object-cover" />
+                  <DiscreetCover size="xs" />
                 </button>
               ))}
             </div>

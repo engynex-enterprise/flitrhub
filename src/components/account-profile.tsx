@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CreatePostDrawer } from "@/components/create-post-drawer";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { LoginDialog } from "@/components/login-dialog";
 import { PreferencesDialog } from "@/components/preferences-dialog";
 import { TIER_STYLES } from "@/components/post-card";
@@ -704,6 +705,7 @@ function MyPostCard({ post }: { post: Post }) {
           sizes="120px"
           className="object-cover transition-transform group-hover:scale-105"
         />
+        <DiscreetCover size="xs" />
         <Badge
           className={cn(
             "absolute left-1.5 top-1.5 gap-1 rounded-full px-1.5 py-0 text-[9px] font-semibold shadow",
@@ -823,6 +825,7 @@ function FavoriteCard({
             sizes="(max-width: 768px) 50vw, 25vw"
             className="object-cover transition-transform group-hover:scale-105"
           />
+          <DiscreetCover size="sm" />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2 text-white">
             <p className="truncate text-xs font-semibold">{post.name}</p>
             <p className="text-[10px] opacity-90">

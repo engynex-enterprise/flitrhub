@@ -7,6 +7,7 @@ import { BadgeCheck, ChevronLeft, ChevronRight, Crown, Flame } from "lucide-reac
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { cn } from "@/lib/utils";
 import { formatCOP } from "@/lib/format";
 import type { Post } from "@/lib/mock-posts";
@@ -91,6 +92,7 @@ function FeaturedCard({ post }: { post: Post }) {
           sizes="220px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
         />
+        <DiscreetCover size="sm" />
         <div className="bg-gradient-gold absolute left-2 top-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 shadow-md">
           <Crown className="h-3 w-3" />
           Destacado

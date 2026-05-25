@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { StoryViewer } from "@/components/story-viewer";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/lib/mock-posts";
@@ -94,6 +95,7 @@ function StoryBubble({ post, onClick }: { post: Post; onClick: () => void }) {
               sizes="64px"
               className="object-cover"
             />
+            <DiscreetCover size="xs" rounded showLabel={false} />
           </span>
         </span>
         {post.isOnline && (

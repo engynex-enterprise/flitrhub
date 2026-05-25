@@ -18,6 +18,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { cn } from "@/lib/utils";
 import { useChat } from "@/lib/chat-context";
 import type { Post } from "@/lib/mock-posts";
@@ -231,6 +232,7 @@ export function StoryViewer({
           className="object-cover"
           priority
         />
+        <DiscreetCover size="lg" />
 
         {/* Bottom gradient + tap zones */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/85 to-transparent" />

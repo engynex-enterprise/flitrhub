@@ -7,6 +7,7 @@ import { BadgeCheck, ChevronLeft, ChevronRight, Heart, Pencil, Target } from "lu
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { TIER_STYLES } from "@/components/post-card";
 import { cn } from "@/lib/utils";
 import { formatCOP } from "@/lib/format";
@@ -169,6 +170,7 @@ function MatchCard({ post, score }: { post: Post; score: number }) {
           sizes="220px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        <DiscreetCover size="sm" />
 
         <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase text-white shadow-md backdrop-blur">
           <Target className="h-3 w-3 text-primary" />

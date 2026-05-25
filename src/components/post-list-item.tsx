@@ -6,6 +6,7 @@ import { BadgeCheck, Crown, Heart, MapPin, PlayCircle, Sparkles, Star } from "lu
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { TIER_STYLES } from "@/components/post-card";
 import { cn } from "@/lib/utils";
 import { formatCOP } from "@/lib/format";
@@ -35,6 +36,7 @@ export function PostListItem({ post, isFavorite, onToggleFavorite }: PostListIte
           sizes="160px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        <DiscreetCover size="sm" />
         <Badge
           className={cn(
             "absolute left-2 top-2 gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold shadow",

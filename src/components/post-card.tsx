@@ -6,6 +6,7 @@ import { BadgeCheck, Crown, Heart, MapPin, PlayCircle, Sparkles, Star } from "lu
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { DiscreetCover } from "@/components/discreet-cover";
 import { cn } from "@/lib/utils";
 import { formatCOP } from "@/lib/format";
 import type { Post, Tier } from "@/lib/mock-posts";
@@ -56,6 +57,7 @@ export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) 
           sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
         />
+        <DiscreetCover size="md" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
 
         <Badge

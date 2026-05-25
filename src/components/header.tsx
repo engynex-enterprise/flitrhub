@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Bell,
+  EyeOff,
   Heart,
   LogIn,
   LogOut,
@@ -11,6 +12,7 @@ import {
   Plus,
   Repeat,
   Settings,
+  ShieldCheck,
   User,
 } from "lucide-react";
 
@@ -28,6 +30,7 @@ import { CitySelector } from "@/components/city-selector";
 import { LoginDialog } from "@/components/login-dialog";
 import { useSession } from "@/lib/session";
 import { useChat } from "@/lib/chat-context";
+import { useDiscreet } from "@/lib/discreet";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
@@ -40,6 +43,7 @@ interface HeaderProps {
 export function Header({ city, onCityChange, favoritesCount, onCreatePost }: HeaderProps) {
   const { user, isLoggedIn, logout, switchRole } = useSession();
   const { chats } = useChat();
+  const { enabled: discreet, toggle: toggleDiscreet } = useDiscreet();
   const totalUnread = chats.reduce((n, c) => n + c.unread, 0);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -79,6 +83,28 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             <Plus className="h-4 w-4" />
           </Button>
 
+          <Button
+            variant={discreet ? "default" : "ghost"}
+            size="icon"
+            onClick={toggleDiscreet}
+            aria-label={discreet ? "Desactivar modo discreto" : "Activar modo discreto"}
+            title={discreet ? "Modo discreto: ON" : "Modo discreto"}
+            className={cn(
+              "relative",
+              discreet &&
+                "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+            )}
+          >
+            {discreet ? (
+              <ShieldCheck className="h-5 w-5" />
+            ) : (
+              <EyeOff className="h-5 w-5" />
+            )}
+            {discreet && (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-background" />
+            )}
+          </Button>
+
           <Button asChild variant="ghost" size="icon" className="relative" aria-label="Centro de chat">
             <Link href="/chat" target="_blank" rel="noopener">
               <MessageSquare className="h-5 w-5" />
@@ -113,7 +139,7 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                   className="relative h-10 w-10 rounded-full p-0"
                   aria-label="Menú de usuario"
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="no-blur h-10 w-10">
                     <AvatarImage src={user.avatar} alt="" />
                     <AvatarFallback>{user.name[0]}</AvatarFallback>
                   </Avatar>

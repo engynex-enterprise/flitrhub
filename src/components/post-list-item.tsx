@@ -21,7 +21,7 @@ export function PostListItem({ post, isFavorite, onToggleFavorite }: PostListIte
   const tier = TIER_STYLES[post.tier];
 
   return (
-    <Card className="group relative flex overflow-hidden p-0 transition-all hover:shadow-md">
+    <Card className="peekable group relative flex overflow-hidden p-0 transition-all hover:shadow-md">
       <Link
         href={`/profile/${encodeURIComponent(post.id)}`}
         className="absolute inset-0 z-10"

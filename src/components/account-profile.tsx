@@ -166,7 +166,7 @@ function ProfileHero({
       <div className="relative px-5 pb-5 pt-0">
         <div className="-mt-12 flex items-end justify-between gap-3">
           <div className="relative">
-            <Avatar className="h-24 w-24 ring-4 ring-card md:h-28 md:w-28">
+            <Avatar className="no-blur h-24 w-24 ring-4 ring-card md:h-28 md:w-28">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback>{user.name[0]}</AvatarFallback>
             </Avatar>

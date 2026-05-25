@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { services, type ServiceKey } from "@/lib/services";
+import { discreetLabel, useDiscreet } from "@/lib/discreet";
 import { AdSidebarBlock } from "@/components/ads";
 
 interface SidebarProps {
@@ -10,15 +11,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ active, onSelect }: SidebarProps) {
+  const { enabled: discreet } = useDiscreet();
+
   return (
     <aside className="fixed inset-y-0 left-0 top-16 z-30 hidden w-72 shrink-0 border-r bg-background md:block">
       <nav className="flex h-[calc(100vh-4rem)] flex-col gap-1 overflow-y-auto p-4">
         <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Servicios
+          {discreet ? "Catálogo" : "Servicios"}
         </p>
         {services.map((service) => {
           const Icon = service.icon;
           const isActive = active === service.key;
+          const label = discreet ? discreetLabel(service.key) : service.label;
           return (
             <button
               key={service.key}
@@ -43,10 +47,12 @@ export function Sidebar({ active, onSelect }: SidebarProps) {
               </span>
               <span className="flex flex-col leading-tight">
                 <span className="text-brand">
-                  {service.label}{" "}
-                  <span className="text-foreground/80">
-                    en {service.city}
-                  </span>
+                  {label}{" "}
+                  {!discreet && (
+                    <span className="text-foreground/80">
+                      en {service.city}
+                    </span>
+                  )}
                 </span>
               </span>
             </button>
@@ -75,12 +81,14 @@ export function MobileServiceTabs({
   active: ServiceKey;
   onSelect: (key: ServiceKey) => void;
 }) {
+  const { enabled: discreet } = useDiscreet();
   return (
     <div className="-mx-4 mb-4 overflow-x-auto border-b bg-background px-4 md:hidden">
       <div className="flex gap-2 pb-3">
         {services.map((service) => {
           const Icon = service.icon;
           const isActive = active === service.key;
+          const label = discreet ? discreetLabel(service.key) : service.label;
           return (
             <button
               key={service.key}
@@ -94,7 +102,7 @@ export function MobileServiceTabs({
               )}
             >
               <Icon className="h-3.5 w-3.5" />
-              {service.label}
+              {label}
             </button>
           );
         })}

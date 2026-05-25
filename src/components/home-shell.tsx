@@ -29,6 +29,7 @@ import {
 } from "@/lib/mock-posts";
 import { useUserPreferences } from "@/lib/preferences";
 import { useFavorites } from "@/lib/favorites";
+import { discreetLabel, useDiscreet } from "@/lib/discreet";
 import { cn } from "@/lib/utils";
 
 const NEARBY_RADIUS_KM = 10;
@@ -40,6 +41,7 @@ export function HomeShell() {
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { favorites, toggleFavorite } = useFavorites();
+  const { enabled: discreet } = useDiscreet();
   const [resultCount, setResultCount] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
@@ -117,7 +119,7 @@ export function HomeShell() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
               <span className="bg-gradient-to-r from-primary to-brand bg-clip-text text-transparent">
-                {current.label}
+                {discreet ? discreetLabel(current.key) : current.label}
               </span>{" "}
               <span className="text-foreground">en {city}</span>
             </h1>

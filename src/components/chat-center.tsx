@@ -19,12 +19,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
+  hasSeededExamples,
   useChat,
   type ChatSession,
 } from "@/lib/chat-context";
 
 export function ChatCenter() {
-  const { chats, sendMessage, markRead, closeChat } = useChat();
+  const {
+    chats,
+    sendMessage,
+    markRead,
+    closeChat,
+    seedExamples,
+    hydrated,
+  } = useChat();
   const searchParams = useSearchParams();
   const requestedPeerId = searchParams.get("peer");
 
@@ -32,6 +40,14 @@ export function ChatCenter() {
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
   const messagesRef = useRef<HTMLDivElement>(null);
+
+  // First visit: auto-seed example chats so the page is never empty.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (chats.length === 0 && !hasSeededExamples()) {
+      seedExamples();
+    }
+  }, [hydrated, chats.length, seedExamples]);
 
   // Initial selection — prefer ?peer=... from query, else first chat.
   useEffect(() => {
@@ -112,7 +128,7 @@ export function ChatCenter() {
                 : "Ningún chat coincide con tu búsqueda."}
             </div>
           ) : (
-            <ul className="scrollbar-hide flex-1 divide-y divide-border/40 overflow-y-auto">
+            <ul className="flex-1 divide-y divide-border/40 overflow-y-auto">
               {filteredChats.map((c) => (
                 <ChatListItem
                   key={c.peer.id}
@@ -173,7 +189,7 @@ export function ChatCenter() {
               {/* Messages */}
               <div
                 ref={messagesRef}
-                className="scrollbar-hide flex-1 space-y-2 overflow-y-auto bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.04),transparent_60%)] px-6 py-6"
+                className="flex-1 space-y-2 overflow-y-auto bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.04),transparent_60%)] px-6 py-6"
               >
                 {selected.messages.map((m, i) => {
                   const prev = selected.messages[i - 1];
@@ -252,7 +268,7 @@ export function ChatCenter() {
               </div>
             </>
           ) : (
-            <EmptyState />
+            <EmptyState onLoadExamples={seedExamples} />
           )}
         </section>
       </div>
@@ -325,7 +341,7 @@ function ChatListItem({
   );
 }
 
-function EmptyState() {
+function EmptyState({ onLoadExamples }: { onLoadExamples: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -336,9 +352,14 @@ function EmptyState() {
         Aquí podrás continuar todas tus conversaciones con perfiles en línea.
         Abre el chat de un perfil para que aparezca en esta vista.
       </p>
-      <Button asChild variant="brand" className="mt-6">
-        <Link href="/">Explorar perfiles</Link>
-      </Button>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <Button variant="brand" onClick={onLoadExamples}>
+          Cargar chats de ejemplo
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/">Explorar perfiles</Link>
+        </Button>
+      </div>
     </div>
   );
 }

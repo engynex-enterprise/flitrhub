@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { StoryViewer } from "@/components/story-viewer";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/lib/mock-posts";
 
@@ -14,6 +15,7 @@ interface StoriesProps {
 
 export function Stories({ items }: StoriesProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const scrollBy = (dir: 1 | -1) => {
     scrollerRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
@@ -52,18 +54,30 @@ export function Stories({ items }: StoriesProps) {
         className="scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 py-1"
       >
         <AddStoryBubble />
-        {items.map((p) => (
-          <StoryBubble key={p.id} post={p} />
+        {items.map((p, i) => (
+          <StoryBubble
+            key={p.id}
+            post={p}
+            onClick={() => setViewerIndex(i)}
+          />
         ))}
       </div>
+
+      <StoryViewer
+        stories={items}
+        initialIndex={viewerIndex ?? 0}
+        open={viewerIndex !== null}
+        onClose={() => setViewerIndex(null)}
+      />
     </section>
   );
 }
 
-function StoryBubble({ post }: { post: Post }) {
+function StoryBubble({ post, onClick }: { post: Post; onClick: () => void }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 focus:outline-none"
     >
       <span

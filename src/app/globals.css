@@ -71,6 +71,40 @@
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
   }
+
+  /* Firefox */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /* WebKit (Chrome / Safari / Edge) */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.2s;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--primary) / 0.7),
+      hsl(var(--brand) / 0.7)
+    );
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 @layer utilities {

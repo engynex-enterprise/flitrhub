@@ -120,7 +120,7 @@ export function ChatWindow({ session }: ChatWindowProps) {
           {/* Messages */}
           <div
             ref={messagesRef}
-            className="scrollbar-hide flex-1 space-y-2 overflow-y-auto bg-background/40 px-3 py-3"
+            className="flex-1 space-y-2 overflow-y-auto bg-background/40 px-3 py-3"
           >
             {session.messages.map((m) => (
               <div

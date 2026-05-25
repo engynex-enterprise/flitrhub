@@ -77,7 +77,7 @@ export function FiltersPanel({ filters, onChange, open, onClose }: FiltersPanelP
         </Button>
       </div>
 
-      <div className="scrollbar-hide flex-1 space-y-1 overflow-y-auto p-4">
+      <div className="flex-1 space-y-1 overflow-y-auto p-4">
         {/* Quick filters — pinned, prominent */}
         <div className="grid grid-cols-2 gap-2 pb-4">
           <QuickToggle

@@ -38,11 +38,14 @@ interface ChatContextValue {
   toggleMinimize: (id: string) => void;
   sendMessage: (id: string, text: string) => void;
   markRead: (id: string) => void;
+  seedExamples: () => void;
+  hydrated: boolean;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
 const STORAGE_KEY = "flitrhub:chats";
+const SEEDED_KEY = "flitrhub:chats:seeded";
 
 const AUTO_REPLIES = [
   "¡Hola! 😘 ¿Cómo puedo ayudarte?",
@@ -72,11 +75,14 @@ function readStorage(): ChatSession[] {
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [chats, setChats] = useState<ChatSession[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const skipNextWrite = useRef(false);
 
   // Hydrate from storage and listen to cross-tab updates via `storage` event.
   useEffect(() => {
+    skipNextWrite.current = true;
     setChats(readStorage());
+    setHydrated(true);
 
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
@@ -179,12 +185,51 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }, 900 + Math.random() * 900);
   }, []);
 
+  const seedExamples = useCallback(() => {
+    // Lazy import to keep the example dataset out of the initial bundle when not needed.
+    import("./example-chats").then(({ buildExampleChats }) => {
+      setChats((prev) => (prev.length > 0 ? prev : buildExampleChats()));
+      try {
+        localStorage.setItem(SEEDED_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ chats, openChat, closeChat, toggleMinimize, sendMessage, markRead }),
-    [chats, openChat, closeChat, toggleMinimize, sendMessage, markRead]
+    () => ({
+      chats,
+      openChat,
+      closeChat,
+      toggleMinimize,
+      sendMessage,
+      markRead,
+      seedExamples,
+      hydrated,
+    }),
+    [
+      chats,
+      openChat,
+      closeChat,
+      toggleMinimize,
+      sendMessage,
+      markRead,
+      seedExamples,
+      hydrated,
+    ]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
+}
+
+export function hasSeededExamples(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return localStorage.getItem(SEEDED_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 export function useChat(): ChatContextValue {

@@ -468,29 +468,25 @@ function FormStep({
                 <Field>
                   <Label>Tipo de cuerpo</Label>
                   <SimpleSelect
-                    options={[
-                      { value: "", label: "Seleccionar..." },
-                      ...BODY_TYPE_OPTIONS.map((o) => ({
-                        value: o.value,
-                        label: o.label,
-                      })),
-                    ]}
+                    options={BODY_TYPE_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    }))}
                     value={draft.bodyType}
-                    onChange={(v) => update("bodyType", v as BodyType | "")}
+                    onChange={(v) => update("bodyType", v as BodyType)}
+                    placeholder="Seleccionar..."
                   />
                 </Field>
                 <Field>
                   <Label>Cabello</Label>
                   <SimpleSelect
-                    options={[
-                      { value: "", label: "Seleccionar..." },
-                      ...HAIR_COLOR_OPTIONS.map((o) => ({
-                        value: o.value,
-                        label: o.label,
-                      })),
-                    ]}
+                    options={HAIR_COLOR_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    }))}
                     value={draft.hairColor}
-                    onChange={(v) => update("hairColor", v as HairColor | "")}
+                    onChange={(v) => update("hairColor", v as HairColor)}
+                    placeholder="Seleccionar..."
                   />
                 </Field>
               </div>
@@ -498,17 +494,13 @@ function FormStep({
                 <Field>
                   <Label>Etnia</Label>
                   <SimpleSelect
-                    options={[
-                      { value: "", label: "Seleccionar..." },
-                      ...ETHNICITY_OPTIONS.map((o) => ({
-                        value: o.value,
-                        label: o.label,
-                      })),
-                    ]}
+                    options={ETHNICITY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: o.label,
+                    }))}
                     value={draft.ethnicity}
-                    onChange={(v) =>
-                      update("ethnicity", v as Ethnicity | "")
-                    }
+                    onChange={(v) => update("ethnicity", v as Ethnicity)}
+                    placeholder="Seleccionar..."
                   />
                 </Field>
                 <Field>

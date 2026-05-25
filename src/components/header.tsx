@@ -117,13 +117,17 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="h-4 w-4" />
-                  Perfil
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="h-4 w-4" />
+                    Mi cuenta
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4" />
-                  Configuración
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <Settings className="h-4 w-4" />
+                    Configuración
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

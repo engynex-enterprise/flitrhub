@@ -28,6 +28,7 @@ import {
   generateStories,
 } from "@/lib/mock-posts";
 import { useUserPreferences } from "@/lib/preferences";
+import { useFavorites } from "@/lib/favorites";
 import { cn } from "@/lib/utils";
 
 const NEARBY_RADIUS_KM = 10;
@@ -38,7 +39,7 @@ export function HomeShell() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { favorites, toggleFavorite } = useFavorites();
   const [resultCount, setResultCount] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
@@ -72,15 +73,6 @@ export function HomeShell() {
     () => generatePosts(0, 36, active, city),
     [active, city]
   );
-
-  const toggleFavorite = useCallback((id: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
 
   const toggleNearby = useCallback(() => {
     setNearbyActive((wasActive) => {

@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Bell, Heart, LogIn, LogOut, Plus, Settings, User } from "lucide-react";
+import { Bell, Heart, LogIn, LogOut, MessageSquare, Plus, Settings, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CitySelector } from "@/components/city-selector";
+import { useSession } from "@/lib/session";
+import { useChat } from "@/lib/chat-context";
 
 interface HeaderProps {
   city: string;
@@ -24,8 +25,9 @@ interface HeaderProps {
 }
 
 export function Header({ city, onCityChange, favoritesCount, onCreatePost }: HeaderProps) {
-  // Mock auth state — replace with real session once backend integration lands.
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isLoggedIn, login, logout } = useSession();
+  const { chats } = useChat();
+  const totalUnread = chats.reduce((n, c) => n + c.unread, 0);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -63,12 +65,18 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             <Plus className="h-4 w-4" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative"
-            aria-label="Favoritos"
-          >
+          <Button asChild variant="ghost" size="icon" className="relative" aria-label="Centro de chat">
+            <Link href="/chat" target="_blank" rel="noopener">
+              <MessageSquare className="h-5 w-5" />
+              {totalUnread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                  {totalUnread}
+                </span>
+              )}
+            </Link>
+          </Button>
+
+          <Button variant="ghost" size="icon" className="relative" aria-label="Favoritos">
             <Heart className="h-5 w-5" />
             {favoritesCount > 0 && (
               <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
@@ -83,7 +91,7 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             </Button>
           )}
 
-          {isLoggedIn ? (
+          {isLoggedIn && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -92,17 +100,19 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                   aria-label="Menú de usuario"
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src="https://i.pravatar.cc/100?img=12" alt="" />
-                    <AvatarFallback>AN</AvatarFallback>
+                    <AvatarImage src={user.avatar} alt="" />
+                    <AvatarFallback>{user.name[0]}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-semibold leading-none">Mi cuenta</p>
+                    <p className="text-sm font-semibold leading-none">
+                      {user.name}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      usuario@flitrhub.com
+                      {user.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -117,7 +127,7 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => setIsLoggedIn(false)}
+                  onClick={logout}
                   className="text-destructive focus:text-destructive"
                 >
                   <LogOut className="h-4 w-4" />
@@ -129,7 +139,7 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             <>
               <Button
                 variant="ghost"
-                onClick={() => setIsLoggedIn(true)}
+                onClick={login}
                 className="hidden sm:inline-flex"
               >
                 <LogIn className="h-4 w-4" />

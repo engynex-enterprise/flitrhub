@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { BadgeCheck, ChevronLeft, ChevronRight, Heart, Pencil, Target } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -155,6 +156,11 @@ function MatchCard({ post, score }: { post: Post; score: number }) {
         ringColor
       )}
     >
+      <Link
+        href={`/profile/${encodeURIComponent(post.id)}`}
+        className="absolute inset-0 z-10"
+        aria-label={`Ver perfil de ${post.name}`}
+      />
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
         <Image
           src={post.imageUrl}

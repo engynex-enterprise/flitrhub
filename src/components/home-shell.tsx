@@ -13,7 +13,7 @@ import { Recomendados } from "@/components/recomendados";
 import { QuickActions } from "@/components/quick-actions";
 import { AdBanner } from "@/components/ads";
 import { PostFeed } from "@/components/post-feed";
-import { CreatePostDialog } from "@/components/create-post-dialog";
+import { CreatePostDrawer } from "@/components/create-post-drawer";
 import { PreferencesDialog } from "@/components/preferences-dialog";
 import { services, type ServiceKey } from "@/lib/services";
 import {
@@ -188,7 +188,7 @@ export function HomeShell() {
         />
       )}
 
-      <CreatePostDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreatePostDrawer open={createOpen} onOpenChange={setCreateOpen} />
 
       <PreferencesDialog
         open={prefsOpen}

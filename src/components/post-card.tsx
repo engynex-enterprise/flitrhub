@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { BadgeCheck, Crown, Heart, MapPin, PlayCircle, Sparkles, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,11 @@ export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) 
 
   return (
     <Card className="group relative overflow-hidden border-border/60 p-0 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-15px_rgba(220,40,100,0.35)]">
+      <Link
+        href={`/profile/${encodeURIComponent(post.id)}`}
+        className="absolute inset-0 z-10"
+        aria-label={`Ver perfil de ${post.name}`}
+      />
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
         <Image
           src={post.imageUrl}
@@ -73,11 +79,12 @@ export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) 
           type="button"
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onToggleFavorite(post.id);
           }}
           aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
           className={cn(
-            "absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full border bg-background/90 backdrop-blur transition-colors",
+            "absolute bottom-3 right-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border bg-background/90 backdrop-blur transition-colors",
             isFavorite ? "text-rose-500" : "text-foreground/70 hover:text-rose-500"
           )}
         >

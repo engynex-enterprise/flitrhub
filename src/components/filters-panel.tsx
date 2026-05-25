@@ -4,14 +4,17 @@ import { useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
+  Crown,
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Wifi,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { SimpleSelect } from "@/components/ui/simple-select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
@@ -48,10 +51,9 @@ export function FiltersPanel({ filters, onChange, open, onClose }: FiltersPanelP
   const update = <K extends keyof Filters>(key: K, value: Filters[K]) =>
     onChange({ ...filters, [key]: value });
 
-  const toggleInArray = <T,>(arr: T[], value: T): T[] =>
-    arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
-
   const activeCount = countActiveFilters(filters);
+
+  const zoneOptions = ZONES.map((z) => ({ value: z, label: z }));
 
   return (
     <aside
@@ -76,7 +78,26 @@ export function FiltersPanel({ filters, onChange, open, onClose }: FiltersPanelP
       </div>
 
       <div className="scrollbar-hide flex-1 space-y-1 overflow-y-auto p-4">
-        {/* Always-visible quick filters */}
+        {/* Quick filters — pinned, prominent */}
+        <div className="grid grid-cols-2 gap-2 pb-4">
+          <QuickToggle
+            icon={Crown}
+            label="Solo destacados"
+            sublabel="Perfiles Premium"
+            active={filters.featuredOnly}
+            onClick={() => update("featuredOnly", !filters.featuredOnly)}
+            tone="gold"
+          />
+          <QuickToggle
+            icon={Wifi}
+            label="Solo en línea"
+            sublabel="Activas ahora"
+            active={filters.onlineOnly}
+            onClick={() => update("onlineOnly", !filters.onlineOnly)}
+            tone="emerald"
+          />
+        </div>
+
         <div className="space-y-3 pb-4">
           <FieldLabel>Buscar</FieldLabel>
           <div className="relative">
@@ -90,246 +111,162 @@ export function FiltersPanel({ filters, onChange, open, onClose }: FiltersPanelP
           </div>
 
           <FieldLabel>Ordenar por</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.sort}
-            onChange={(e) => update("sort", e.target.value as Filters["sort"])}
-          >
-            {SORT_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => update("sort", v as Filters["sort"])}
+          />
         </div>
 
-        {/* Categoría */}
         <Section title="Categoría" defaultOpen>
           <FieldLabel>Plan</FieldLabel>
-          <ChipsRow
-            options={TIER_OPTIONS}
-            isActive={(v) => filters.tier === v}
-            onClick={(v) => update("tier", v)}
-          />
-          <ToggleRow
-            label="Solo destacados"
-            description="Perfiles con prioridad en Destacados"
-            checked={filters.featuredOnly}
-            onChange={(v) => update("featuredOnly", v)}
+          <SimpleSelect
+            options={TIER_OPTIONS.map((t) => ({ value: t.value, label: t.label }))}
+            value={filters.tier}
+            onChange={(v) => update("tier", v as Filters["tier"])}
           />
         </Section>
 
-        {/* Ubicación */}
         <Section title="Ubicación" defaultOpen>
-          <FieldLabel>Zonas (selección múltiple)</FieldLabel>
-          <ChipsWrap
-            options={ZONES.map((z) => ({ value: z, label: z }))}
-            isActive={(v) => filters.zones.includes(v)}
-            onClick={(v) => update("zones", toggleInArray(filters.zones, v))}
+          <FieldLabel>Zonas</FieldLabel>
+          <MultiSelect
+            options={zoneOptions}
+            values={filters.zones}
+            onChange={(v) => update("zones", v)}
+            placeholder="Todas las zonas"
           />
 
           <FieldLabel>Distancia</FieldLabel>
-          <Select
-            value={String(filters.distanceKm ?? "all")}
-            onChange={(e) => {
-              const v = e.target.value;
-              update("distanceKm", v === "all" ? null : Number(v));
-            }}
-          >
-            {DISTANCE_OPTIONS.map((d) => (
-              <option key={String(d.value)} value={d.value === null ? "all" : d.value}>
-                {d.label}
-              </option>
-            ))}
-          </Select>
+          <SimpleSelect
+            options={DISTANCE_OPTIONS.map((d) => ({
+              value: d.value === null ? "all" : String(d.value),
+              label: d.label,
+            }))}
+            value={filters.distanceKm === null ? "all" : String(filters.distanceKm)}
+            onChange={(v) => update("distanceKm", v === "all" ? null : Number(v))}
+          />
 
           <FieldLabel>Tipo de encuentro</FieldLabel>
-          <ChipsWrap
+          <MultiSelect
             options={SERVICE_LOCATION_OPTIONS}
-            isActive={(v) => filters.serviceLocations.includes(v)}
-            onClick={(v) =>
-              update("serviceLocations", toggleInArray(filters.serviceLocations, v))
-            }
+            values={filters.serviceLocations}
+            onChange={(v) => update("serviceLocations", v)}
+            placeholder="Cualquiera"
           />
         </Section>
 
-        {/* Edad y físico */}
         <Section title="Edad y físico">
           <FieldLabel>Edad</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={AGE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.ageRange}
-            onChange={(e) =>
-              update("ageRange", e.target.value as Filters["ageRange"])
-            }
-          >
-            {AGE_OPTIONS.map((a) => (
-              <option key={a.value} value={a.value}>
-                {a.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => update("ageRange", v as Filters["ageRange"])}
+          />
 
           <FieldLabel>Estatura</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={HEIGHT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.heightRange}
-            onChange={(e) =>
-              update("heightRange", e.target.value as Filters["heightRange"])
-            }
-          >
-            {HEIGHT_OPTIONS.map((h) => (
-              <option key={h.value} value={h.value}>
-                {h.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => update("heightRange", v as Filters["heightRange"])}
+          />
 
           <FieldLabel>Tipo de cuerpo</FieldLabel>
-          <ChipsWrap
+          <MultiSelect
             options={BODY_TYPE_OPTIONS}
-            isActive={(v) => filters.bodyTypes.includes(v)}
-            onClick={(v) =>
-              update("bodyTypes", toggleInArray(filters.bodyTypes, v))
-            }
+            values={filters.bodyTypes}
+            onChange={(v) => update("bodyTypes", v)}
+            placeholder="Cualquier cuerpo"
           />
 
           <FieldLabel>Cabello</FieldLabel>
-          <ChipsWrap
+          <MultiSelect
             options={HAIR_COLOR_OPTIONS}
-            isActive={(v) => filters.hairColors.includes(v)}
-            onClick={(v) =>
-              update("hairColors", toggleInArray(filters.hairColors, v))
-            }
+            values={filters.hairColors}
+            onChange={(v) => update("hairColors", v)}
+            placeholder="Cualquier cabello"
           />
 
           <FieldLabel>Etnia</FieldLabel>
-          <ChipsWrap
+          <MultiSelect
             options={ETHNICITY_OPTIONS}
-            isActive={(v) => filters.ethnicities.includes(v)}
-            onClick={(v) =>
-              update("ethnicities", toggleInArray(filters.ethnicities, v))
-            }
+            values={filters.ethnicities}
+            onChange={(v) => update("ethnicities", v)}
+            placeholder="Cualquier etnia"
           />
         </Section>
 
-        {/* Atributos */}
         <Section title="Atributos">
           <FieldLabel>Senos</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={BREASTS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.breasts}
-            onChange={(e) =>
-              update("breasts", e.target.value as Filters["breasts"])
-            }
-          >
-            {BREASTS_OPTIONS.map((b) => (
-              <option key={b.value} value={b.value}>
-                {b.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => update("breasts", v as Filters["breasts"])}
+          />
 
           <FieldLabel>Tatuajes</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={TRI_STATE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.tattoos}
-            onChange={(e) =>
-              update("tattoos", e.target.value as Filters["tattoos"])
-            }
-          >
-            {TRI_STATE_OPTIONS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => update("tattoos", v as Filters["tattoos"])}
+          />
 
           <FieldLabel>Piercings</FieldLabel>
-          <Select
+          <SimpleSelect
+            options={TRI_STATE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
             value={filters.piercings}
-            onChange={(e) =>
-              update("piercings", e.target.value as Filters["piercings"])
-            }
-          >
-            {TRI_STATE_OPTIONS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </Select>
-        </Section>
-
-        {/* Idiomas */}
-        <Section title="Idiomas">
-          <ChipsWrap
-            options={LANGUAGE_OPTIONS}
-            isActive={(v) => filters.languages.includes(v)}
-            onClick={(v) =>
-              update("languages", toggleInArray(filters.languages, v))
-            }
+            onChange={(v) => update("piercings", v as Filters["piercings"])}
           />
         </Section>
 
-        {/* Disponibilidad */}
+        <Section title="Idiomas">
+          <MultiSelect
+            options={LANGUAGE_OPTIONS}
+            values={filters.languages}
+            onChange={(v) => update("languages", v)}
+            placeholder="Cualquier idioma"
+          />
+        </Section>
+
         <Section title="Disponibilidad">
           <FieldLabel>Horario</FieldLabel>
-          <ChipsWrap
+          <MultiSelect
             options={TIME_SLOT_OPTIONS}
-            isActive={(v) => filters.availabilitySlots.includes(v)}
-            onClick={(v) =>
-              update(
-                "availabilitySlots",
-                toggleInArray(filters.availabilitySlots, v)
-              )
-            }
-          />
-          <ToggleRow
-            label="En línea ahora"
-            description="Disponibles en este momento"
-            checked={filters.onlineOnly}
-            onChange={(v) => update("onlineOnly", v)}
+            values={filters.availabilitySlots}
+            onChange={(v) => update("availabilitySlots", v)}
+            placeholder="Cualquier horario"
           />
         </Section>
 
-        {/* Precio y pago */}
         <Section title="Precio y pago">
           <FieldLabel>Precio máx. por hora</FieldLabel>
-          <Select
-            value={String(filters.maxPrice ?? "all")}
-            onChange={(e) => {
-              const v = e.target.value;
-              update("maxPrice", v === "all" ? null : Number(v));
-            }}
-          >
-            {PRICE_PRESETS.map((p) => (
-              <option key={String(p.value)} value={p.value === null ? "all" : p.value}>
-                {p.label}
-              </option>
-            ))}
-          </Select>
+          <SimpleSelect
+            options={PRICE_PRESETS.map((p) => ({
+              value: p.value === null ? "all" : String(p.value),
+              label: p.label,
+            }))}
+            value={filters.maxPrice === null ? "all" : String(filters.maxPrice)}
+            onChange={(v) => update("maxPrice", v === "all" ? null : Number(v))}
+          />
 
-          <FieldLabel>Métodos de pago aceptados</FieldLabel>
-          <ChipsWrap
+          <FieldLabel>Métodos de pago</FieldLabel>
+          <MultiSelect
             options={PAYMENT_OPTIONS}
-            isActive={(v) => filters.paymentMethods.includes(v)}
-            onClick={(v) =>
-              update("paymentMethods", toggleInArray(filters.paymentMethods, v))
-            }
+            values={filters.paymentMethods}
+            onChange={(v) => update("paymentMethods", v)}
+            placeholder="Cualquiera"
           />
         </Section>
 
-        {/* Calidad y confianza */}
         <Section title="Calidad y confianza">
           <FieldLabel>Rating mínimo</FieldLabel>
-          <Select
-            value={String(filters.minRating ?? "all")}
-            onChange={(e) => {
-              const v = e.target.value;
-              update("minRating", v === "all" ? null : Number(v));
-            }}
-          >
-            {RATING_OPTIONS.map((r) => (
-              <option key={String(r.value)} value={r.value === null ? "all" : r.value}>
-                {r.label}
-              </option>
-            ))}
-          </Select>
+          <SimpleSelect
+            options={RATING_OPTIONS.map((r) => ({
+              value: r.value === null ? "all" : String(r.value),
+              label: r.label,
+            }))}
+            value={filters.minRating === null ? "all" : String(filters.minRating)}
+            onChange={(v) => update("minRating", v === "all" ? null : Number(v))}
+          />
 
           <ToggleRow
             label="Con video"
@@ -384,95 +321,24 @@ function Section({
   defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [openState, setOpenState] = useState(defaultOpen);
   return (
     <div className="border-t border-border/60 first:border-t-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpenState((v) => !v)}
         className="flex w-full items-center justify-between py-3 text-left text-xs font-bold uppercase tracking-wider text-foreground hover:text-primary"
       >
         {title}
         <ChevronDown
           className={cn(
             "h-4 w-4 text-muted-foreground transition-transform",
-            open && "rotate-180"
+            openState && "rotate-180"
           )}
         />
       </button>
-      {open && <div className="space-y-3 pb-4">{children}</div>}
+      {openState && <div className="space-y-3 pb-4">{children}</div>}
     </div>
-  );
-}
-
-function ChipsRow<T extends string>({
-  options,
-  isActive,
-  onClick,
-}: {
-  options: { value: T; label: string }[];
-  isActive: (v: T) => boolean;
-  onClick: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((opt) => (
-        <Chip
-          key={opt.value}
-          label={opt.label}
-          active={isActive(opt.value)}
-          onClick={() => onClick(opt.value)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ChipsWrap<T extends string>({
-  options,
-  isActive,
-  onClick,
-}: {
-  options: { value: T; label: string }[];
-  isActive: (v: T) => boolean;
-  onClick: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((opt) => (
-        <Chip
-          key={opt.value}
-          label={opt.label}
-          active={isActive(opt.value)}
-          onClick={() => onClick(opt.value)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Chip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent"
-      )}
-    >
-      {label}
-    </button>
   );
 }
 

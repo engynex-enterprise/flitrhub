@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { BadgeCheck, Crown, Heart, MapPin, PlayCircle, Sparkles, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,12 @@ export function PostListItem({ post, isFavorite, onToggleFavorite }: PostListIte
   const tier = TIER_STYLES[post.tier];
 
   return (
-    <Card className="group flex overflow-hidden p-0 transition-all hover:shadow-md">
+    <Card className="group relative flex overflow-hidden p-0 transition-all hover:shadow-md">
+      <Link
+        href={`/profile/${encodeURIComponent(post.id)}`}
+        className="absolute inset-0 z-10"
+        aria-label={`Ver perfil de ${post.name}`}
+      />
       <div className="relative h-40 w-32 shrink-0 overflow-hidden bg-muted sm:w-40">
         <Image
           src={post.imageUrl}
@@ -64,10 +70,14 @@ export function PostListItem({ post, isFavorite, onToggleFavorite }: PostListIte
 
             <button
               type="button"
-              onClick={() => onToggleFavorite(post.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(post.id);
+              }}
               aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors",
+                "relative z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors",
                 isFavorite ? "text-rose-500" : "text-foreground/60 hover:text-rose-500"
               )}
             >

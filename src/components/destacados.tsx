@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { BadgeCheck, ChevronLeft, ChevronRight, Crown, Flame } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,11 @@ function FeaturedCard({ post }: { post: Post }) {
         "ring-1 ring-gold/40 transition-all hover:-translate-y-1 hover:shadow-2xl hover:ring-gold/70"
       )}
     >
+      <Link
+        href={`/profile/${encodeURIComponent(post.id)}`}
+        className="absolute inset-0 z-10"
+        aria-label={`Ver perfil de ${post.name}`}
+      />
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
         <Image
           src={post.imageUrl}

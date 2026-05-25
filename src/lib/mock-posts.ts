@@ -1,4 +1,4 @@
-import type { ServiceKey } from "./services";
+import { services, type ServiceKey } from "./services";
 
 export type Tier = "platino" | "oro" | "plata" | "basico";
 export type BodyType = "delgada" | "atletica" | "curvilinea" | "voluptuosa" | "plus";
@@ -167,4 +167,52 @@ export function generateStories(service: ServiceKey, city: string = "Bogotá"): 
   return generatePosts(0, 18, service, city)
     .filter((p) => p.isOnline)
     .slice(0, 14);
+}
+
+const PAGE_SIZE_FOR_LOOKUP = 12;
+
+/**
+ * Reverses a Post.id back to the original Post by re-running the deterministic
+ * generator with the same seed. Format: `${service}-${city}-${seed}`.
+ * Both service keys (some have hyphens) and city names are handled correctly
+ * by matching the longest known service prefix.
+ */
+export function getPostById(id: string): Post | null {
+  if (!id) return null;
+  const decoded = id.includes("%") ? decodeURIComponent(id) : id;
+
+  const lastDash = decoded.lastIndexOf("-");
+  if (lastDash < 0) return null;
+  const seed = Number(decoded.slice(lastDash + 1));
+  if (Number.isNaN(seed)) return null;
+
+  const head = decoded.slice(0, lastDash);
+
+  // Find the longest service key that matches the start (handles "escorts-gay" before "escorts").
+  let matchedService: ServiceKey | null = null;
+  for (const s of services) {
+    if (head.startsWith(s.key + "-")) {
+      if (!matchedService || s.key.length > matchedService.length) {
+        matchedService = s.key;
+      }
+    }
+  }
+  if (!matchedService) return null;
+
+  const city = head.slice(matchedService.length + 1);
+  if (!city) return null;
+
+  const page = Math.floor(seed / PAGE_SIZE_FOR_LOOKUP);
+  const idxInPage = seed % PAGE_SIZE_FOR_LOOKUP;
+  const posts = generatePosts(page, PAGE_SIZE_FOR_LOOKUP, matchedService, city);
+  return posts[idxInPage] ?? null;
+}
+
+/** Mock gallery for the profile detail page — derived deterministically from the post id. */
+export function generateGallery(post: Post): string[] {
+  const seed = post.id.split("-").pop() ?? "0";
+  const base = Number(seed) || 0;
+  return Array.from({ length: 5 }).map(
+    (_, i) => `https://picsum.photos/seed/flitr-${base}-gal-${i}/800/1000`
+  );
 }

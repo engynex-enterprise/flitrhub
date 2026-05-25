@@ -13,9 +13,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { SimpleSelect } from "@/components/ui/simple-select";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
 import {
   AGE_OPTIONS,
   BODY_TYPE_OPTIONS,
@@ -59,13 +59,10 @@ export function PreferencesDialog({
     value: UserPreferences[K]
   ) => setDraft((d) => ({ ...d, [key]: value }));
 
-  const toggle = <T,>(arr: T[], value: T): T[] =>
-    arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
-
-  const tierOptionsForPrefs = TIER_OPTIONS.filter((t) => t.value !== "all") as {
-    value: Tier;
-    label: string;
-  }[];
+  const tierOptions = TIER_OPTIONS.filter((t) => t.value !== "all").map((t) => ({
+    value: t.value as Tier,
+    label: t.label,
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,120 +80,105 @@ export function PreferencesDialog({
         <div className="space-y-5 py-2">
           <Field>
             <Label>Edad ideal</Label>
-            <Select
+            <SimpleSelect
+              options={AGE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
               value={draft.ageRange}
-              onChange={(e) =>
-                update("ageRange", e.target.value as UserPreferences["ageRange"])
+              onChange={(v) =>
+                update("ageRange", v as UserPreferences["ageRange"])
               }
-            >
-              {AGE_OPTIONS.map((a) => (
-                <option key={a.value} value={a.value}>
-                  {a.label}
-                </option>
-              ))}
-            </Select>
+            />
           </Field>
 
           <Field>
             <Label>Tipo de cuerpo</Label>
-            <ChipsWrap
+            <MultiSelect
               options={BODY_TYPE_OPTIONS}
-              isActive={(v) => draft.bodyTypes.includes(v)}
-              onClick={(v) => update("bodyTypes", toggle(draft.bodyTypes, v))}
+              values={draft.bodyTypes}
+              onChange={(v) => update("bodyTypes", v)}
+              placeholder="Cualquier cuerpo"
             />
           </Field>
 
           <Field>
             <Label>Cabello</Label>
-            <ChipsWrap
+            <MultiSelect
               options={HAIR_COLOR_OPTIONS}
-              isActive={(v) => draft.hairColors.includes(v)}
-              onClick={(v) => update("hairColors", toggle(draft.hairColors, v))}
+              values={draft.hairColors}
+              onChange={(v) => update("hairColors", v)}
+              placeholder="Cualquier cabello"
             />
           </Field>
 
           <Field>
             <Label>Etnia</Label>
-            <ChipsWrap
+            <MultiSelect
               options={ETHNICITY_OPTIONS}
-              isActive={(v) => draft.ethnicities.includes(v)}
-              onClick={(v) => update("ethnicities", toggle(draft.ethnicities, v))}
+              values={draft.ethnicities}
+              onChange={(v) => update("ethnicities", v)}
+              placeholder="Cualquier etnia"
             />
           </Field>
 
           <Field>
             <Label>Plan preferido</Label>
-            <ChipsWrap
-              options={tierOptionsForPrefs}
-              isActive={(v) => draft.preferredTiers.includes(v)}
-              onClick={(v) =>
-                update("preferredTiers", toggle(draft.preferredTiers, v))
-              }
+            <MultiSelect
+              options={tierOptions}
+              values={draft.preferredTiers as Tier[]}
+              onChange={(v) => update("preferredTiers", v)}
+              placeholder="Cualquier plan"
             />
           </Field>
 
           <Field>
             <Label>Idiomas que necesitas</Label>
-            <ChipsWrap
+            <MultiSelect
               options={LANGUAGE_OPTIONS}
-              isActive={(v) => draft.languages.includes(v)}
-              onClick={(v) => update("languages", toggle(draft.languages, v))}
+              values={draft.languages}
+              onChange={(v) => update("languages", v)}
+              placeholder="Cualquier idioma"
             />
           </Field>
 
           <Field>
             <Label>Tipo de encuentro</Label>
-            <ChipsWrap
+            <MultiSelect
               options={SERVICE_LOCATION_OPTIONS}
-              isActive={(v) => draft.serviceLocations.includes(v)}
-              onClick={(v) =>
-                update("serviceLocations", toggle(draft.serviceLocations, v))
-              }
+              values={draft.serviceLocations}
+              onChange={(v) => update("serviceLocations", v)}
+              placeholder="Cualquier tipo"
             />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field>
               <Label>Presupuesto máximo</Label>
-              <Select
-                value={String(draft.maxPrice ?? "all")}
-                onChange={(e) =>
-                  update(
-                    "maxPrice",
-                    e.target.value === "all" ? null : Number(e.target.value)
-                  )
+              <SimpleSelect
+                options={PRICE_PRESETS.map((p) => ({
+                  value: p.value === null ? "all" : String(p.value),
+                  label: p.label,
+                }))}
+                value={draft.maxPrice === null ? "all" : String(draft.maxPrice)}
+                onChange={(v) =>
+                  update("maxPrice", v === "all" ? null : Number(v))
                 }
-              >
-                {PRICE_PRESETS.map((p) => (
-                  <option
-                    key={String(p.value)}
-                    value={p.value === null ? "all" : p.value}
-                  >
-                    {p.label}
-                  </option>
-                ))}
-              </Select>
+              />
             </Field>
             <Field>
               <Label>Distancia máxima</Label>
-              <Select
-                value={String(draft.maxDistanceKm ?? "all")}
-                onChange={(e) =>
-                  update(
-                    "maxDistanceKm",
-                    e.target.value === "all" ? null : Number(e.target.value)
-                  )
+              <SimpleSelect
+                options={DISTANCE_OPTIONS.map((d) => ({
+                  value: d.value === null ? "all" : String(d.value),
+                  label: d.label,
+                }))}
+                value={
+                  draft.maxDistanceKm === null
+                    ? "all"
+                    : String(draft.maxDistanceKm)
                 }
-              >
-                {DISTANCE_OPTIONS.map((d) => (
-                  <option
-                    key={String(d.value)}
-                    value={d.value === null ? "all" : d.value}
-                  >
-                    {d.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(v) =>
+                  update("maxDistanceKm", v === "all" ? null : Number(v))
+                }
+              />
             </Field>
           </div>
 
@@ -245,34 +227,4 @@ export function PreferencesDialog({
 
 function Field({ children }: { children: React.ReactNode }) {
   return <div className="space-y-2">{children}</div>;
-}
-
-function ChipsWrap<T extends string>({
-  options,
-  isActive,
-  onClick,
-}: {
-  options: { value: T; label: string }[];
-  isActive: (v: T) => boolean;
-  onClick: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onClick(opt.value)}
-          className={cn(
-            "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-            isActive(opt.value)
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-background text-foreground hover:bg-accent"
-          )}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
 }

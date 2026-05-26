@@ -1,4 +1,5 @@
 import { services, type ServiceKey } from "./services";
+import { SERVICE_FORM_CONFIG } from "./service-form-config";
 
 export type Tier = "platino" | "oro" | "plata" | "basico";
 export type BodyType = "delgada" | "atletica" | "curvilinea" | "voluptuosa" | "plus";
@@ -43,6 +44,20 @@ export interface Post {
   paymentMethods: PaymentMethod[];
   availableSlots: TimeSlot[];
   distanceKm: number; // simulated distance from user
+
+  // service-specific (optional — populated based on `service` via SERVICE_FORM_CONFIG)
+  specialties?: string[];
+  extras?: string[];
+  role?: string;
+  partner?: { name: string; age: number; gender: "M" | "F" };
+  groupCapacity?: number;
+
+  // engagement / trust metadata (shown across services)
+  reviewsCount: number;
+  viewsCount: number;
+  responseTimeMins: number;
+  memberSinceMonths: number;
+  lastActiveMins: number;
 }
 
 const NAMES = [
@@ -83,6 +98,26 @@ function pseudoImage(seed: number) {
   return `https://picsum.photos/seed/flitr-${seed}/600/800`;
 }
 
+function pickN<T>(arr: T[], seed: number, n: number): T[] {
+  if (arr.length === 0) return [];
+  const count = Math.max(1, Math.min(n, arr.length));
+  const out: T[] = [];
+  const used = new Set<number>();
+  let offset = 0;
+  while (out.length < count && offset < arr.length * 3) {
+    const idx = (seed * 17 + offset * 23) % arr.length;
+    if (!used.has(idx)) {
+      used.add(idx);
+      out.push(arr[idx]);
+    }
+    offset++;
+  }
+  return out;
+}
+
+const PARTNER_NAMES_M = ["Carlos", "Andrés", "Mateo", "Sebastián", "Daniel"];
+const PARTNER_NAMES_F = ["Camila", "Sofía", "Andrea", "Valeria", "Mariana"];
+
 export function generatePosts(
   page: number,
   pageSize: number,
@@ -120,6 +155,37 @@ export function generatePosts(
     if (bit(seed + 6, 25)) availableSlots.push("madrugada");
     if (availableSlots.length === 0) availableSlots.push("tarde");
 
+    // Service-specific chip data, sourced from the form config so labels stay in sync.
+    const cfg = SERVICE_FORM_CONFIG[service];
+    const specialties = cfg.specialties
+      ? pickN(
+          cfg.specialties.options.map((o) => o.value),
+          seed + 19,
+          2 + (seed % 3) // 2–4 items
+        )
+      : undefined;
+    const extras = cfg.extras
+      ? pickN(
+          cfg.extras.options.map((o) => o.value),
+          seed + 31,
+          1 + (seed % 3) // 1–3 items
+        )
+      : undefined;
+    const role = cfg.role
+      ? rand(
+          cfg.role.options.map((o) => o.value),
+          seed + 41
+        )
+      : undefined;
+    const partner = cfg.showPartner
+      ? {
+          name: rand(seed % 2 === 0 ? PARTNER_NAMES_M : PARTNER_NAMES_F, seed),
+          age: 24 + (seed % 12),
+          gender: (seed % 2 === 0 ? "M" : "F") as "M" | "F",
+        }
+      : undefined;
+    const groupCapacity = cfg.showGroupCapacity ? 4 + (seed % 12) : undefined;
+
     posts.push({
       id: `${service}-${city}-${seed}`,
       name: rand(NAMES, seed),
@@ -154,6 +220,18 @@ export function generatePosts(
       paymentMethods,
       availableSlots,
       distanceKm: 1 + ((seed * 7) % 40), // 1–40 km
+
+      specialties,
+      extras,
+      role,
+      partner,
+      groupCapacity,
+
+      reviewsCount: 3 + ((seed * 7) % 120),
+      viewsCount: 200 + ((seed * 131) % 12000),
+      responseTimeMins: 1 + ((seed * 3) % 45),
+      memberSinceMonths: 1 + ((seed * 5) % 36),
+      lastActiveMins: seed % 5 === 0 ? 0 : 5 + ((seed * 11) % 240),
     });
   }
   return posts;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MapPin } from "lucide-react";
 
 import { Header } from "@/features/layout/components/header";
@@ -39,7 +40,23 @@ export function HomeShell() {
   const [city, setCity] = useState("Bogotá");
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // Default open; URL becomes ?filters=closed only when collapsed.
+  const filtersOpen = searchParams.get("filters") !== "closed";
+  const setFiltersOpen = useCallback(
+    (open: boolean) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (open) params.delete("filters");
+      else params.set("filters", "closed");
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [router, pathname, searchParams]
+  );
   const { favorites, toggleFavorite } = useFavorites();
   const { enabled: discreet } = useDiscreet();
   const [resultCount, setResultCount] = useState(0);

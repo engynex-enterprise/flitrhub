@@ -205,7 +205,7 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
     <div className="min-h-screen bg-background">
       <Header favoritesCount={favorites.size} />
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:px-6">
+      <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 md:px-6 md:pb-24 md:pt-12">
         {/* Page action row */}
         <div className="mb-4 flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5">
@@ -227,7 +227,7 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
         <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_1fr]">
           {/* Gallery — sticky on desktop */}
           <section className="lg:sticky lg:top-20 lg:self-start">
-            <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border bg-muted lg:aspect-auto lg:h-[calc(100vh-180px)]">
+            <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border bg-muted lg:aspect-auto lg:h-[calc(100vh-220px)] lg:max-h-[640px]">
               <Image
                 src={gallery[active]}
                 alt={post.name}
@@ -440,6 +440,43 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
                 </div>
               </Card>
             )}
+
+            {/* Contact CTAs */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsFavorite((v) => !v)}
+                aria-label="Favorito"
+                className={cn("shrink-0", isFavorite && "text-rose-500")}
+              >
+                <Heart
+                  className={cn("h-4 w-4", isFavorite && "fill-rose-500")}
+                />
+              </Button>
+              <Button className="min-w-0 flex-1 gap-2 bg-emerald-600 px-3 hover:bg-emerald-700">
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span className="truncate">WhatsApp</span>
+              </Button>
+              {post.isOnline && (
+                <Button
+                  variant="brand"
+                  onClick={startChat}
+                  className="relative min-w-0 flex-1 gap-2 px-3"
+                >
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
+                  </span>
+                  <MessageSquare className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Chat</span>
+                </Button>
+              )}
+              <Button variant="outline" className="min-w-0 flex-1 gap-2 px-3">
+                <Phone className="h-4 w-4 shrink-0" />
+                <span className="truncate">Llamar</span>
+              </Button>
+            </div>
 
             {/* Verification card */}
             {post.verified && (
@@ -751,88 +788,6 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
         </div>
       )}
 
-      {/* Fixed action footer */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
-        <div className="mx-auto flex h-20 max-w-6xl items-center gap-3 px-4 md:px-6">
-          {/* Identity (left) — hidden on small screens to save space */}
-          <div className="hidden min-w-0 items-center gap-3 sm:flex">
-            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-muted">
-              <Image
-                src={post.imageUrl}
-                alt={post.name}
-                fill
-                sizes="48px"
-                className="object-cover"
-              />
-              <DiscreetCover size="xs" />
-              {post.isOnline && (
-                <span className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-background" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold">{post.name}</p>
-              {!isContactos && (
-                <p className="truncate text-xs">
-                  <span className="font-semibold text-primary">
-                    {formatCOP(post.pricePerHour)}
-                  </span>
-                  <span className="text-muted-foreground"> COP · {priceLabel.toLowerCase()}</span>
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* CTAs (right) */}
-          <div className="ml-auto flex flex-1 items-center gap-2 sm:flex-initial">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsFavorite((v) => !v)}
-              aria-label="Favorito"
-              className={cn("shrink-0", isFavorite && "text-rose-500")}
-            >
-              <Heart
-                className={cn("h-4 w-4", isFavorite && "fill-rose-500")}
-              />
-            </Button>
-            <Button
-              className="min-w-0 flex-1 gap-2 bg-emerald-600 px-3 hover:bg-emerald-700 sm:flex-initial"
-            >
-              <MessageCircle className="h-4 w-4 shrink-0" />
-              <span className="truncate">WhatsApp</span>
-            </Button>
-            {post.isOnline && (
-              <Button
-                variant="brand"
-                onClick={startChat}
-                className="relative min-w-0 flex-1 gap-2 px-3 sm:flex-initial"
-              >
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-                </span>
-                <MessageSquare className="h-4 w-4 shrink-0" />
-                <span className="truncate">Chat</span>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              className="hidden min-w-0 gap-2 px-3 sm:inline-flex"
-            >
-              <Phone className="h-4 w-4 shrink-0" />
-              <span className="truncate">Llamar</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Llamar"
-              className="shrink-0 sm:hidden"
-            >
-              <Phone className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

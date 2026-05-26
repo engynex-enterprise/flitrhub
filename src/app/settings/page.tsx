@@ -1,4 +1,4 @@
-import { SettingsPage } from "@/components/settings-page";
+import { SettingsPage } from "@/features/settings";
 
 export const metadata = {
   title: "Configuración · flitrhub",

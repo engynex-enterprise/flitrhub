@@ -1,4 +1,4 @@
-import { AccountProfile } from "@/components/account-profile";
+import { AccountProfile } from "@/features/profile";
 
 export const metadata = {
   title: "Mi cuenta · flitrhub",

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { ChatCenter } from "@/components/chat-center";
+import { ChatCenter } from "@/features/chat";
 
 export const metadata = {
   title: "Centro de chat · flitrhub",

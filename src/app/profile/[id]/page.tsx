@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { ProfileDetail } from "@/components/profile-detail";
-import { generateGallery, getPostById } from "@/lib/mock-posts";
+import { Button } from "@/shared/components/ui/button";
+import { ProfileDetail } from "@/features/posts";
+import { generateGallery, getPostById } from "@/features/posts/data/mock-posts";
 
 interface ProfilePageProps {
   params: { id: string };

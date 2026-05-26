@@ -1,4 +1,4 @@
-import { SignupForm } from "@/components/signup-form";
+import { SignupForm } from "@/features/auth";
 
 export const metadata = {
   title: "Crear cuenta · flitrhub",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Providers } from "@/components/providers";
+import { Providers } from "@/features/layout";
 
 export const metadata: Metadata = {
   title: "Flitrhub — Servicios para adultos",

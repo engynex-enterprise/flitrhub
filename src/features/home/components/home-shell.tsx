@@ -35,21 +35,37 @@ import { cn } from "@/shared/lib/utils";
 
 const NEARBY_RADIUS_KM = 10;
 
+const DEFAULT_SERVICE: ServiceKey = "masajes";
+const DEFAULT_CITY = "Bogotá";
+
+function isServiceKey(value: string | null): value is ServiceKey {
+  return value !== null && services.some((s) => s.key === value);
+}
+
 export function HomeShell() {
-  const [active, setActive] = useState<ServiceKey>("masajes");
-  const [city, setCity] = useState("Bogotá");
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<ViewMode>("card");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  // Default open; URL becomes ?filters=closed only when collapsed.
+
+  // URL-derived state. Defaults are kept out of the URL to keep it clean.
+  const serviceParam = searchParams.get("service");
+  const active: ServiceKey = isServiceKey(serviceParam)
+    ? serviceParam
+    : DEFAULT_SERVICE;
+  const city = searchParams.get("city") ?? DEFAULT_CITY;
+  const viewMode: ViewMode =
+    searchParams.get("view") === "list" ? "list" : "card";
+  const nearbyActive = searchParams.get("nearby") === "1";
+  // Filters panel: default open; closes only when ?filters=closed.
   const filtersOpen = searchParams.get("filters") !== "closed";
-  const setFiltersOpen = useCallback(
-    (open: boolean) => {
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (open) params.delete("filters");
-      else params.set("filters", "closed");
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null) params.delete(key);
+        else params.set(key, value);
+      }
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
@@ -57,12 +73,39 @@ export function HomeShell() {
     },
     [router, pathname, searchParams]
   );
+
+  const setActive = useCallback(
+    (key: ServiceKey) =>
+      updateParams({ service: key === DEFAULT_SERVICE ? null : key }),
+    [updateParams]
+  );
+  const setCity = useCallback(
+    (next: string) =>
+      updateParams({ city: next === DEFAULT_CITY ? null : next }),
+    [updateParams]
+  );
+  const setViewMode = useCallback(
+    (next: ViewMode) => updateParams({ view: next === "card" ? null : next }),
+    [updateParams]
+  );
+  const setFiltersOpen = useCallback(
+    (open: boolean) => updateParams({ filters: open ? null : "closed" }),
+    [updateParams]
+  );
+
+  // Filters object stays in local state (too many fields for the URL).
+  // It's seeded from the nearby URL flag so refresh respects it.
+  const [filters, setFilters] = useState<Filters>(() =>
+    searchParams.get("nearby") === "1"
+      ? { ...DEFAULT_FILTERS, distanceKm: NEARBY_RADIUS_KM, sort: "distance" }
+      : DEFAULT_FILTERS
+  );
+
   const { favorites, toggleFavorite } = useFavorites();
   const { enabled: discreet } = useDiscreet();
   const [resultCount, setResultCount] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const [nearbyActive, setNearbyActive] = useState(false);
 
   const {
     prefs,
@@ -94,19 +137,18 @@ export function HomeShell() {
   );
 
   const toggleNearby = useCallback(() => {
-    setNearbyActive((wasActive) => {
-      if (wasActive) {
-        setFilters((f) => ({ ...f, distanceKm: null, sort: "relevance" }));
-        return false;
-      }
+    if (nearbyActive) {
+      setFilters((f) => ({ ...f, distanceKm: null, sort: "relevance" }));
+      updateParams({ nearby: null });
+    } else {
       setFilters((f) => ({
         ...f,
         distanceKm: NEARBY_RADIUS_KM,
         sort: "distance",
       }));
-      return true;
-    });
-  }, []);
+      updateParams({ nearby: "1" });
+    }
+  }, [nearbyActive, updateParams]);
 
   const activeFilterCount = countActiveFilters(filters);
 

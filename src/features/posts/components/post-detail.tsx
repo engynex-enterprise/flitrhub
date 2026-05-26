@@ -207,9 +207,9 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
     <div className="min-h-screen bg-background">
       <Header favoritesCount={favorites.size} />
 
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 md:px-6 md:pb-24 md:pt-12">
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-12">
         {/* Page action row */}
-        <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="mb-6 flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" />
@@ -226,10 +226,10 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
           </div>
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_1fr]">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Gallery — sticky on desktop */}
           <section className="lg:sticky lg:top-20 lg:self-start">
-            <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border bg-muted lg:aspect-auto lg:h-[calc(100vh-220px)] lg:max-h-[640px]">
+            <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border bg-muted shadow-xl lg:aspect-auto lg:h-[calc(100vh-9rem)]">
               <Image
                 src={gallery[active]}
                 alt={post.name}

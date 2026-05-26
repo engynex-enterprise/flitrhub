@@ -21,9 +21,11 @@ import {
   Home,
   Languages,
   MapPin,
+  Maximize2,
   MessageCircle,
   MessageSquare,
   Phone,
+  X,
   PlayCircle,
   Ruler,
   Share2,
@@ -169,6 +171,7 @@ function chipLabel(
 export function PostDetail({ post, gallery }: PostDetailProps) {
   const [active, setActive] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { openChat } = useChat();
   const { favorites } = useFavorites();
 
@@ -224,17 +227,18 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
         <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_1fr]">
           {/* Gallery — sticky on desktop */}
           <section className="lg:sticky lg:top-20 lg:self-start">
-            <div className="group relative aspect-[4/5] max-h-[calc(100vh-260px)] overflow-hidden rounded-2xl border bg-muted lg:aspect-auto lg:h-[calc(100vh-260px)]">
+            <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border bg-muted lg:aspect-auto lg:h-[calc(100vh-180px)]">
               <Image
                 src={gallery[active]}
                 alt={post.name}
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 1024px) 100vw, 55vw"
                 className="object-cover"
                 priority
               />
               <DiscreetCover size="lg" />
 
+              {/* Top-left tier badge */}
               <Badge
                 className={cn(
                   "absolute left-4 top-4 gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-md",
@@ -245,30 +249,43 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
                 {tier.label}
               </Badge>
 
-              {post.isOnline && (
-                <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow-md backdrop-blur">
-                  <span className="h-2 w-2 rounded-full bg-white" />
-                  En línea
-                </div>
-              )}
+              {/* Top-right corner controls */}
+              <div className="absolute right-4 top-4 flex items-center gap-2">
+                {post.isOnline && (
+                  <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow-md backdrop-blur">
+                    <span className="h-2 w-2 rounded-full bg-white" />
+                    En línea
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  aria-label="Ampliar foto"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition-colors hover:bg-black/70"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
+              </div>
 
+              {/* Video button (bottom-right, above thumbnails strip) */}
               {post.hasVideo && (
                 <button
                   type="button"
-                  className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-black/80"
+                  className="absolute bottom-32 right-4 inline-flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-black/80"
                 >
                   <PlayCircle className="h-4 w-4" />
                   Ver video
                 </button>
               )}
 
+              {/* Prev / next */}
               {gallery.length > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={prev}
                     aria-label="Anterior"
-                    className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 group-hover:opacity-100"
+                    className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 group-hover:opacity-100"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -276,71 +293,49 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
                     type="button"
                     onClick={next}
                     aria-label="Siguiente"
-                    className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 group-hover:opacity-100"
+                    className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 group-hover:opacity-100"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
-                  <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-0.5 text-[11px] font-medium text-white backdrop-blur">
-                    {active + 1} / {gallery.length}
-                  </div>
                 </>
               )}
-            </div>
 
-            {/* Thumbnails */}
-            <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto pb-1">
-              {gallery.map((src, i) => (
-                <button
-                  key={src}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`Foto ${i + 1}`}
-                  className={cn(
-                    "relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors",
-                    active === i
-                      ? "border-primary"
-                      : "border-transparent hover:border-border"
-                  )}
-                >
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                  <DiscreetCover size="xs" />
-                </button>
-              ))}
+              {/* Thumbnails — overlay strip at the bottom */}
+              {gallery.length > 1 && (
+                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-3 pb-3 pt-10">
+                  <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-white/90">
+                    <span>
+                      {active + 1} / {gallery.length}
+                    </span>
+                  </div>
+                  <div className="scrollbar-hide flex gap-2 overflow-x-auto">
+                    {gallery.map((src, i) => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => setActive(i)}
+                        aria-label={`Foto ${i + 1}`}
+                        className={cn(
+                          "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all",
+                          active === i
+                            ? "border-primary opacity-100"
+                            : "border-white/30 opacity-70 hover:border-white/60 hover:opacity-100"
+                        )}
+                      >
+                        <Image
+                          src={src}
+                          alt=""
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                        <DiscreetCover size="xs" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Stats bar — engagement / trust */}
-            <Card className="mt-4 grid grid-cols-2 divide-x divide-y p-0 sm:grid-cols-4 sm:divide-y-0">
-              <StatTile
-                icon={Star}
-                value={post.rating?.toFixed(1) ?? "—"}
-                label={`${post.reviewsCount} reseñas`}
-                tone="text-amber-400"
-              />
-              <StatTile
-                icon={Eye}
-                value={post.viewsCount.toLocaleString("es-CO")}
-                label="Visitas"
-                tone="text-sky-400"
-              />
-              <StatTile
-                icon={Timer}
-                value={`${post.responseTimeMins} min`}
-                label="Respuesta"
-                tone="text-emerald-400"
-              />
-              <StatTile
-                icon={Calendar}
-                value={formatMemberSince(post.memberSinceMonths)}
-                label="En flitrhub"
-                tone="text-primary"
-              />
-            </Card>
           </section>
 
           {/* Info column */}
@@ -386,6 +381,34 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
                 </span>
               </p>
             </div>
+
+            {/* Stats bar — engagement / trust */}
+            <Card className="grid grid-cols-2 divide-x divide-y p-0 sm:grid-cols-4 sm:divide-y-0">
+              <StatTile
+                icon={Star}
+                value={post.rating?.toFixed(1) ?? "—"}
+                label={`${post.reviewsCount} reseñas`}
+                tone="text-amber-400"
+              />
+              <StatTile
+                icon={Eye}
+                value={post.viewsCount.toLocaleString("es-CO")}
+                label="Visitas"
+                tone="text-sky-400"
+              />
+              <StatTile
+                icon={Timer}
+                value={`${post.responseTimeMins} min`}
+                label="Respuesta"
+                tone="text-emerald-400"
+              />
+              <StatTile
+                icon={Calendar}
+                value={formatMemberSince(post.memberSinceMonths)}
+                label="En flitrhub"
+                tone="text-primary"
+              />
+            </Card>
 
             {/* Price card — hide for contactos (no price) */}
             {!isContactos && (
@@ -578,85 +601,155 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
                 />
               )}
             </div>
+
+            <Separator />
+
+            {/* Reviews */}
+            <div>
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 text-lg font-bold">
+                    <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    Reseñas
+                    {post.rating !== undefined && (
+                      <span className="text-sm font-normal text-muted-foreground">
+                        · {post.rating.toFixed(1)} promedio
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {post.reviewsCount} reseñas verificadas
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">
+                  Escribir reseña
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {MOCK_REVIEWS.map((r) => (
+                  <Card key={r.author} className="p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={r.avatar} alt="" />
+                        <AvatarFallback>{r.author[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">
+                          {r.author}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {r.date}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              i < r.rating
+                                ? "fill-amber-400"
+                                : "fill-none opacity-30"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm leading-relaxed text-foreground/80">
+                      {r.body}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Safety tips */}
+            <Card className="border-primary/20 bg-primary/5 p-5">
+              <div className="flex gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <div>
+                  <h3 className="text-sm font-bold">
+                    Consejos para tu encuentro
+                  </h3>
+                  <ul className="mt-1.5 grid gap-1 text-xs text-muted-foreground">
+                    <li>· Confirma siempre por el chat antes de moverte.</li>
+                    <li>· No realices anticipos a cuentas no verificadas.</li>
+                    <li>· Llega con la dirección exacta y un plan de salida.</li>
+                    <li>· Reporta cualquier comportamiento sospechoso.</li>
+                  </ul>
+                </div>
+              </div>
+            </Card>
           </section>
         </div>
-
-        {/* Reviews */}
-        <section className="mt-12">
-          <div className="mb-4 flex items-end justify-between">
-            <div>
-              <h2 className="flex items-center gap-2 text-xl font-bold">
-                <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                Reseñas
-                {post.rating !== undefined && (
-                  <span className="text-base font-normal text-muted-foreground">
-                    · {post.rating.toFixed(1)} promedio
-                  </span>
-                )}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {post.reviewsCount} reseñas verificadas
-              </p>
-            </div>
-            <Button variant="outline" size="sm">
-              Escribir reseña
-            </Button>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {MOCK_REVIEWS.map((r) => (
-              <Card key={r.author} className="p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={r.avatar} alt="" />
-                    <AvatarFallback>{r.author[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">
-                      {r.author}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {r.date}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-0.5 text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          "h-3.5 w-3.5",
-                          i < r.rating
-                            ? "fill-amber-400"
-                            : "fill-none opacity-30"
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm leading-relaxed text-foreground/80">
-                  {r.body}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Safety tips footer */}
-        <Card className="mt-12 border-primary/20 bg-primary/5 p-5">
-          <div className="flex gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <div>
-              <h3 className="text-sm font-bold">Consejos para tu encuentro</h3>
-              <ul className="mt-1.5 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-                <li>· Confirma siempre por el chat antes de moverte.</li>
-                <li>· No realices anticipos a cuentas no verificadas.</li>
-                <li>· Llega con la dirección exacta y un plan de salida.</li>
-                <li>· Reporta cualquier comportamiento sospechoso.</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
       </main>
+
+      {/* Lightbox / fullscreen viewer */}
+      {lightboxOpen && (
+        <div
+          role="dialog"
+          aria-label="Vista ampliada"
+          onClick={() => setLightboxOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Cerrar"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {gallery.length > 1 && (
+            <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur">
+              {active + 1} / {gallery.length}
+            </div>
+          )}
+
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prev();
+                }}
+                aria-label="Anterior"
+                className="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  next();
+                }}
+                aria-label="Siguiente"
+                className="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+
+          <div
+            className="relative h-[88vh] w-[92vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={gallery[active]}
+              alt={post.name}
+              fill
+              sizes="92vw"
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
 
       {/* Fixed action footer */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">

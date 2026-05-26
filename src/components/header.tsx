@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  BadgeCheck,
   Bell,
+  ChevronRight,
   EyeOff,
   Heart,
   LogIn,
@@ -13,6 +15,7 @@ import {
   Repeat,
   Settings,
   ShieldCheck,
+  Sparkles,
   User,
 } from "lucide-react";
 
@@ -26,6 +29,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader as DialogHeaderUi,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { CitySelector } from "@/components/city-selector";
 import { LoginDialog } from "@/components/login-dialog";
 import { useSession } from "@/lib/session";
@@ -51,6 +62,7 @@ export function Header({
   const { enabled: discreet, toggle: toggleDiscreet } = useDiscreet();
   const totalUnread = chats.reduce((n, c) => n + c.unread, 0);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const showCity = city !== undefined && onCityChange !== undefined;
 
   return (
@@ -169,47 +181,117 @@ export function Header({
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-60" align="end">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-semibold leading-none">
-                      {user.name}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                    <p className="pt-1.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                      {user.role === "provider"
-                        ? "Cuenta anunciante"
-                        : "Cuenta cliente"}
-                    </p>
+              <DropdownMenuContent
+                className="w-80 overflow-hidden p-0"
+                align="end"
+              >
+                {/* Hero header */}
+                <div className="bg-gradient-sensual relative overflow-hidden px-4 pb-4 pt-5">
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/30 blur-3xl" />
+                  <div className="pointer-events-none absolute -left-12 -bottom-12 h-32 w-32 rounded-full bg-gold/20 blur-3xl" />
+
+                  <div className="relative flex items-start gap-3">
+                    <Avatar className="no-blur h-14 w-14 ring-2 ring-white/30">
+                      <AvatarImage src={user.avatar} alt="" />
+                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <div className="flex items-center gap-1">
+                        <p className="truncate text-sm font-bold text-white">
+                          {user.name}
+                        </p>
+                        <BadgeCheck className="h-4 w-4 shrink-0 fill-sky-400 text-white" />
+                      </div>
+                      <p className="truncate text-xs text-white/70">
+                        {user.email}
+                      </p>
+                      <span
+                        className={cn(
+                          "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                          user.role === "provider"
+                            ? "bg-gradient-gold text-amber-950"
+                            : "bg-white/15 text-white backdrop-blur"
+                        )}
+                      >
+                        {user.role === "provider" ? (
+                          <Sparkles className="h-3 w-3" />
+                        ) : (
+                          <Heart className="h-3 w-3" />
+                        )}
+                        {user.role === "provider"
+                          ? "Cuenta anunciante"
+                          : "Cuenta cliente"}
+                      </span>
+                    </div>
                   </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">
-                    <User className="h-4 w-4" />
-                    Mi cuenta
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">
-                    <Settings className="h-4 w-4" />
-                    Configuración
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={switchRole}>
-                  <Repeat className="h-4 w-4" />
-                  Cambiar a {user.role === "provider" ? "cliente" : "anunciante"}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Cerrar sesión
-                </DropdownMenuItem>
+
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full justify-between border-white/20 bg-white/10 text-white backdrop-blur hover:bg-white/20 hover:text-white"
+                  >
+                    <Link href="/profile">
+                      Ver mi perfil
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+
+                {/* Menu items */}
+                <div className="p-1.5">
+                  <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2">
+                    <Link href="/profile">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-foreground">
+                        <User className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="flex-1 text-sm">Mi cuenta</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2">
+                    <Link href="/profile">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-foreground">
+                        <Settings className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="flex-1 text-sm">Configuración</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={switchRole}
+                    className="cursor-pointer gap-2.5 py-2"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <Repeat className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm">
+                        Cambiar a{" "}
+                        {user.role === "provider" ? "cliente" : "anunciante"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {user.role === "provider"
+                          ? "Explora perfiles como cliente"
+                          : "Publica y ofrece servicios"}
+                      </p>
+                    </div>
+                  </DropdownMenuItem>
+                </div>
+
+                <DropdownMenuSeparator className="my-0" />
+
+                <div className="p-1.5">
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="cursor-pointer gap-2.5 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-destructive/10 text-destructive">
+                      <LogOut className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="text-sm">Cerrar sesión</span>
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (

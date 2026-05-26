@@ -49,7 +49,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avat
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
-import { Separator } from "@/shared/components/ui/separator";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { Header } from "@/features/layout/components/header";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
@@ -168,10 +167,13 @@ function chipLabel(
 
 /* -------------------- Main component -------------------- */
 
+type DetailTab = "info" | "detalles" | "reseñas";
+
 export function PostDetail({ post, gallery }: PostDetailProps) {
   const [active, setActive] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [tab, setTab] = useState<DetailTab>("info");
   const { openChat } = useChat();
   const { favorites } = useFavorites();
 
@@ -497,227 +499,276 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </Card>
             )}
 
-            {/* Description */}
-            <div>
-              <h2 className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                Sobre {isParejas ? "nosotros" : "mí"}
-              </h2>
-              <p className="leading-relaxed text-foreground/90">
-                {post.description}
-              </p>
+            {/* Tabs */}
+            <div className="-mx-1 flex gap-1 overflow-x-auto border-b">
+              {(
+                [
+                  { id: "info", label: "Información" },
+                  { id: "detalles", label: "Detalles" },
+                  { id: "reseñas", label: "Reseñas" },
+                ] as { id: DetailTab; label: string }[]
+              ).map((t) => {
+                const isActive = tab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTab(t.id)}
+                    className={cn(
+                      "relative px-4 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.label}
+                    {isActive && (
+                      <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Partner — only parejas */}
-            {isParejas && post.partner && (
-              <Card className="p-4">
-                <h3 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  <Users2 className="h-3.5 w-3.5 text-primary" />
-                  La pareja
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <PartnerSlot
-                    name={post.name}
-                    age={post.age}
-                    label={post.partner.gender === "M" ? "Ella" : "Él"}
-                  />
-                  <PartnerSlot
-                    name={post.partner.name}
-                    age={post.partner.age}
-                    label={post.partner.gender === "M" ? "Él" : "Ella"}
-                  />
-                </div>
-              </Card>
-            )}
-
-            <Separator />
-
-            {/* Specialties (service-aware label) */}
-            {post.specialties && post.specialties.length > 0 && cfg.specialties && (
-              <ChipsBlock
-                title={cfg.specialties.label}
-                icon={Sparkles}
-                items={post.specialties.map((v) =>
-                  chipLabel(v, cfg.specialties?.options)
-                )}
-                tone="primary"
-              />
-            )}
-
-            {/* Extras (service-aware label) */}
-            {post.extras && post.extras.length > 0 && cfg.extras && (
-              <ChipsBlock
-                title={cfg.extras.label}
-                icon={Tag}
-                items={post.extras.map((v) =>
-                  chipLabel(v, cfg.extras?.options)
-                )}
-              />
-            )}
-
-            {/* Physical attributes — only when service shows them */}
-            {cfg.showPhysical && (
-              <>
-                <Separator />
+            {/* TAB: Información */}
+            {tab === "info" && (
+              <div className="space-y-6">
+                {/* Description */}
                 <div>
-                  <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    <Wand2 className="h-3.5 w-3.5 text-primary" />
-                    Características
+                  <h2 className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    Sobre {isParejas ? "nosotros" : "mí"}
                   </h2>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <Stat
-                      icon={Ruler}
-                      label="Estatura"
-                      value={`${post.height} cm`}
-                    />
-                    <Stat
-                      icon={Users}
-                      label="Cuerpo"
-                      value={BODY_LABEL[post.bodyType]}
-                    />
-                    <Stat
-                      icon={Sticker}
-                      label="Cabello"
-                      value={HAIR_LABEL[post.hairColor]}
-                    />
-                    <Stat
-                      icon={Globe}
-                      label="Etnia"
-                      value={ETHNICITY_LABEL[post.ethnicity]}
-                    />
-                    <Stat
-                      label="Senos"
-                      icon={Heart}
-                      value={
-                        post.breasts === "natural" ? "Naturales" : "Operadas"
-                      }
-                    />
-                    <Stat
-                      label="Tatuajes"
-                      icon={Sticker}
-                      value={post.hasTattoos ? "Sí" : "No"}
-                    />
-                    <Stat
-                      label="Piercings"
-                      icon={Sticker}
-                      value={post.hasPiercings ? "Sí" : "No"}
-                    />
-                    {post.hasVideo && (
-                      <Stat label="Video" icon={Video} value="Disponible" />
-                    )}
-                  </div>
+                  <p className="leading-relaxed text-foreground/90">
+                    {post.description}
+                  </p>
                 </div>
-              </>
+
+                {/* Partner — only parejas */}
+                {isParejas && post.partner && (
+                  <Card className="p-4">
+                    <h3 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <Users2 className="h-3.5 w-3.5 text-primary" />
+                      La pareja
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <PartnerSlot
+                        name={post.name}
+                        age={post.age}
+                        label={post.partner.gender === "M" ? "Ella" : "Él"}
+                      />
+                      <PartnerSlot
+                        name={post.partner.name}
+                        age={post.partner.age}
+                        label={post.partner.gender === "M" ? "Él" : "Ella"}
+                      />
+                    </div>
+                  </Card>
+                )}
+
+                {/* Specialties */}
+                {post.specialties &&
+                  post.specialties.length > 0 &&
+                  cfg.specialties && (
+                    <ChipsBlock
+                      title={cfg.specialties.label}
+                      icon={Sparkles}
+                      items={post.specialties.map((v) =>
+                        chipLabel(v, cfg.specialties?.options)
+                      )}
+                      tone="primary"
+                    />
+                  )}
+
+                {/* Extras */}
+                {post.extras && post.extras.length > 0 && cfg.extras && (
+                  <ChipsBlock
+                    title={cfg.extras.label}
+                    icon={Tag}
+                    items={post.extras.map((v) =>
+                      chipLabel(v, cfg.extras?.options)
+                    )}
+                  />
+                )}
+              </div>
             )}
 
-            <Separator />
+            {/* TAB: Detalles */}
+            {tab === "detalles" && (
+              <div className="space-y-6">
+                {/* Physical attributes — only when service shows them */}
+                {cfg.showPhysical && (
+                  <div>
+                    <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                      <Wand2 className="h-3.5 w-3.5 text-primary" />
+                      Características
+                    </h2>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      <Stat
+                        icon={Ruler}
+                        label="Estatura"
+                        value={`${post.height} cm`}
+                      />
+                      <Stat
+                        icon={Users}
+                        label="Cuerpo"
+                        value={BODY_LABEL[post.bodyType]}
+                      />
+                      <Stat
+                        icon={Sticker}
+                        label="Cabello"
+                        value={HAIR_LABEL[post.hairColor]}
+                      />
+                      <Stat
+                        icon={Globe}
+                        label="Etnia"
+                        value={ETHNICITY_LABEL[post.ethnicity]}
+                      />
+                      <Stat
+                        label="Senos"
+                        icon={Heart}
+                        value={
+                          post.breasts === "natural"
+                            ? "Naturales"
+                            : "Operadas"
+                        }
+                      />
+                      <Stat
+                        label="Tatuajes"
+                        icon={Sticker}
+                        value={post.hasTattoos ? "Sí" : "No"}
+                      />
+                      <Stat
+                        label="Piercings"
+                        icon={Sticker}
+                        value={post.hasPiercings ? "Sí" : "No"}
+                      />
+                      {post.hasVideo && (
+                        <Stat
+                          label="Video"
+                          icon={Video}
+                          value="Disponible"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
 
-            {/* Service info — varies by service type */}
-            <div className="grid grid-cols-1 gap-4">
-              {showServiceLocations && (
-                <ChipsBlock
-                  title="Encuentros"
-                  icon={Home}
-                  items={post.serviceLocations.map((l) => LOCATION_LABEL[l])}
-                />
-              )}
-              <ChipsBlock
-                title="Horarios disponibles"
-                icon={Clock}
-                items={post.availableSlots.map((s) => SLOT_LABEL[s])}
-              />
+                {/* Service info — varies by service type */}
+                <div className="grid grid-cols-1 gap-4">
+                  {showServiceLocations && (
+                    <ChipsBlock
+                      title="Encuentros"
+                      icon={Home}
+                      items={post.serviceLocations.map(
+                        (l) => LOCATION_LABEL[l]
+                      )}
+                    />
+                  )}
+                  <ChipsBlock
+                    title="Horarios disponibles"
+                    icon={Clock}
+                    items={post.availableSlots.map((s) => SLOT_LABEL[s])}
+                  />
               <ChipsBlock
                 title="Idiomas"
                 icon={Languages}
                 items={post.languages.map((l) => LANGUAGE_LABEL[l])}
               />
-              {!isContactos && (
-                <ChipsBlock
-                  title="Métodos de pago"
-                  icon={CreditCard}
-                  items={post.paymentMethods.map((m) => PAYMENT_LABEL[m])}
-                />
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Reviews */}
-            <div>
-              <div className="mb-4 flex items-end justify-between gap-3">
-                <div>
-                  <h2 className="flex items-center gap-2 text-lg font-bold">
-                    <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                    Reseñas
-                    {post.rating !== undefined && (
-                      <span className="text-sm font-normal text-muted-foreground">
-                        · {post.rating.toFixed(1)} promedio
-                      </span>
-                    )}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {post.reviewsCount} reseñas verificadas
-                  </p>
+                  {!isContactos && (
+                    <ChipsBlock
+                      title="Métodos de pago"
+                      icon={CreditCard}
+                      items={post.paymentMethods.map(
+                        (m) => PAYMENT_LABEL[m]
+                      )}
+                    />
+                  )}
                 </div>
-                <Button variant="outline" size="sm">
-                  Escribir reseña
-                </Button>
               </div>
+            )}
 
-              <div className="space-y-3">
-                {MOCK_REVIEWS.map((r) => (
-                  <Card key={r.author} className="p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={r.avatar} alt="" />
-                        <AvatarFallback>{r.author[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold">
-                          {r.author}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {r.date}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-0.5 text-amber-400">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              "h-3.5 w-3.5",
-                              i < r.rating
-                                ? "fill-amber-400"
-                                : "fill-none opacity-30"
-                            )}
-                          />
-                        ))}
-                      </div>
+            {/* TAB: Reseñas */}
+            {tab === "reseñas" && (
+              <div className="space-y-6">
+                {/* Reviews */}
+                <div>
+                  <div className="mb-4 flex items-end justify-between gap-3">
+                    <div>
+                      <h2 className="flex items-center gap-2 text-lg font-bold">
+                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                        Reseñas
+                        {post.rating !== undefined && (
+                          <span className="text-sm font-normal text-muted-foreground">
+                            · {post.rating.toFixed(1)} promedio
+                          </span>
+                        )}
+                      </h2>
+                      <p className="text-xs text-muted-foreground">
+                        {post.reviewsCount} reseñas verificadas
+                      </p>
                     </div>
-                    <p className="text-sm leading-relaxed text-foreground/80">
-                      {r.body}
-                    </p>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                    <Button variant="outline" size="sm">
+                      Escribir reseña
+                    </Button>
+                  </div>
 
-            {/* Safety tips */}
-            <Card className="border-primary/20 bg-primary/5 p-5">
-              <div className="flex gap-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <h3 className="text-sm font-bold">
-                    Consejos para tu encuentro
-                  </h3>
-                  <ul className="mt-1.5 grid gap-1 text-xs text-muted-foreground">
-                    <li>· Confirma siempre por el chat antes de moverte.</li>
-                    <li>· No realices anticipos a cuentas no verificadas.</li>
-                    <li>· Llega con la dirección exacta y un plan de salida.</li>
-                    <li>· Reporta cualquier comportamiento sospechoso.</li>
-                  </ul>
+                  <div className="space-y-3">
+                    {MOCK_REVIEWS.map((r) => (
+                      <Card key={r.author} className="p-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={r.avatar} alt="" />
+                            <AvatarFallback>{r.author[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold">
+                              {r.author}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {r.date}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-0.5 text-amber-400">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={cn(
+                                  "h-3.5 w-3.5",
+                                  i < r.rating
+                                    ? "fill-amber-400"
+                                    : "fill-none opacity-30"
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm leading-relaxed text-foreground/80">
+                          {r.body}
+                        </p>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Safety tips */}
+                <Card className="border-primary/20 bg-primary/5 p-5">
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <div>
+                      <h3 className="text-sm font-bold">
+                        Consejos para tu encuentro
+                      </h3>
+                      <ul className="mt-1.5 grid gap-1 text-xs text-muted-foreground">
+                        <li>· Confirma siempre por el chat antes de moverte.</li>
+                        <li>· No realices anticipos a cuentas no verificadas.</li>
+                        <li>· Llega con la dirección exacta y un plan de salida.</li>
+                        <li>· Reporta cualquier comportamiento sospechoso.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
               </div>
-            </Card>
+            )}
           </section>
         </div>
       </main>

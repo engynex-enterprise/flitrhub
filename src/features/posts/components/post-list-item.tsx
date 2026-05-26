@@ -24,7 +24,7 @@ export function PostListItem({ post, isFavorite, onToggleFavorite }: PostListIte
   return (
     <Card className="peekable group relative flex overflow-hidden p-0 transition-all hover:shadow-md">
       <Link
-        href={`/profile/${encodeURIComponent(post.id)}`}
+        href={`/post/${encodeURIComponent(post.id)}`}
         className="absolute inset-0 z-10"
         aria-label={`Ver perfil de ${post.name}`}
       />

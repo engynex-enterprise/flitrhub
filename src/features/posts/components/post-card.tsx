@@ -45,7 +45,7 @@ export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) 
   return (
     <Card className="peekable group relative overflow-hidden border-border/60 p-0 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-15px_rgba(220,40,100,0.35)]">
       <Link
-        href={`/profile/${encodeURIComponent(post.id)}`}
+        href={`/post/${encodeURIComponent(post.id)}`}
         className="absolute inset-0 z-10"
         aria-label={`Ver perfil de ${post.name}`}
       />

@@ -165,7 +165,7 @@ export function ChatCenter() {
                   </p>
                 </div>
                 <Button asChild variant="ghost" size="sm" className="gap-1.5">
-                  <Link href={`/profile/${encodeURIComponent(selected.peer.id)}`} target="_blank">
+                  <Link href={`/post/${encodeURIComponent(selected.peer.id)}`} target="_blank">
                     Ver perfil
                   </Link>
                 </Button>

@@ -306,7 +306,7 @@ export function StoryViewer({
               className="h-9 w-9 rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
             >
               <Link
-                href={`/profile/${encodeURIComponent(current.id)}`}
+                href={`/post/${encodeURIComponent(current.id)}`}
                 aria-label="Ver perfil"
                 onClick={onClose}
               >

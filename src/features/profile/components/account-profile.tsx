@@ -930,7 +930,7 @@ function MyPostCard({ post }: { post: Post }) {
   return (
     <Card className="group relative flex overflow-hidden p-0">
       <Link
-        href={`/profile/${encodeURIComponent(post.id)}`}
+        href={`/post/${encodeURIComponent(post.id)}`}
         className="relative h-32 w-28 shrink-0 overflow-hidden bg-muted"
         aria-label={`Ver ${post.name}`}
       >
@@ -980,7 +980,7 @@ function MyPostCard({ post }: { post: Post }) {
         </div>
         <div className="flex flex-wrap gap-1.5">
           <Button asChild variant="outline" size="sm" className="h-7 gap-1 text-[11px]">
-            <Link href={`/profile/${encodeURIComponent(post.id)}`}>
+            <Link href={`/post/${encodeURIComponent(post.id)}`}>
               <Eye className="h-3 w-3" />
               Ver
             </Link>
@@ -1050,7 +1050,7 @@ function FavoriteCard({
   return (
     <Card className="group relative overflow-hidden p-0">
       <Link
-        href={`/profile/${encodeURIComponent(post.id)}`}
+        href={`/post/${encodeURIComponent(post.id)}`}
         className="block"
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">

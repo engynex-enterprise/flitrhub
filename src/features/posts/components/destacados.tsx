@@ -80,7 +80,7 @@ function FeaturedCard({ post }: { post: Post }) {
       )}
     >
       <Link
-        href={`/profile/${encodeURIComponent(post.id)}`}
+        href={`/post/${encodeURIComponent(post.id)}`}
         className="absolute inset-0 z-10"
         aria-label={`Ver perfil de ${post.name}`}
       />

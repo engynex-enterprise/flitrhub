@@ -4,7 +4,7 @@ export { PostCardSkeleton } from "./components/post-card-skeleton";
 export { PostListItem } from "./components/post-list-item";
 export { PostFeed } from "./components/post-feed";
 export { CreatePostDrawer } from "./components/create-post-drawer";
-export { ProfileDetail } from "./components/profile-detail";
+export { PostDetail } from "./components/post-detail";
 export { Destacados } from "./components/destacados";
 export { Recomendados } from "./components/recomendados";
 export { DiscreetCover } from "./components/discreet-cover";

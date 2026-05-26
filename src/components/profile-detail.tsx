@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { useChat } from "@/lib/chat-context";
+import { useFavorites } from "@/lib/favorites";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DiscreetCover } from "@/components/discreet-cover";
+import { Header } from "@/components/header";
 import { TIER_STYLES } from "@/components/post-card";
 import { services } from "@/lib/services";
 import { formatCOP } from "@/lib/format";
@@ -131,6 +133,7 @@ export function ProfileDetail({ post, gallery }: ProfileDetailProps) {
   const [active, setActive] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const { openChat } = useChat();
+  const { favorites } = useFavorites();
 
   const tier = TIER_STYLES[post.tier];
   const service = services.find((s) => s.key === post.service);
@@ -145,16 +148,18 @@ export function ProfileDetail({ post, gallery }: ProfileDetailProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
+      <Header favoritesCount={favorites.size} />
+
+      <main className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+        {/* Page action row */}
+        <div className="mb-4 flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" />
-              Volver
+              Volver al inicio
             </Link>
           </Button>
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
               size="icon"
@@ -172,9 +177,6 @@ export function ProfileDetail({ post, gallery }: ProfileDetailProps) {
             </Button>
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-6 md:px-6">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
           {/* Gallery */}
           <section>

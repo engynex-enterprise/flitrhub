@@ -34,18 +34,24 @@ import { useDiscreet } from "@/lib/discreet";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
-  city: string;
-  onCityChange: (city: string) => void;
-  favoritesCount: number;
-  onCreatePost: () => void;
+  city?: string;
+  onCityChange?: (city: string) => void;
+  favoritesCount?: number;
+  onCreatePost?: () => void;
 }
 
-export function Header({ city, onCityChange, favoritesCount, onCreatePost }: HeaderProps) {
+export function Header({
+  city,
+  onCityChange,
+  favoritesCount = 0,
+  onCreatePost,
+}: HeaderProps = {}) {
   const { user, isLoggedIn, logout, switchRole } = useSession();
   const { chats } = useChat();
   const { enabled: discreet, toggle: toggleDiscreet } = useDiscreet();
   const totalUnread = chats.reduce((n, c) => n + c.unread, 0);
   const [loginOpen, setLoginOpen] = useState(false);
+  const showCity = city !== undefined && onCityChange !== undefined;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -59,29 +65,35 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
           </span>
         </Link>
 
-        <div className="ml-2 hidden md:block">
-          <CitySelector city={city} onChange={onCityChange} />
-        </div>
+        {showCity && (
+          <div className="ml-2 hidden md:block">
+            <CitySelector city={city!} onChange={onCityChange!} />
+          </div>
+        )}
 
         <div className="ml-auto flex items-center gap-1.5">
-          <Button
-            variant="brand"
-            size="sm"
-            onClick={onCreatePost}
-            className="hidden gap-1.5 sm:inline-flex"
-          >
-            <Plus className="h-4 w-4" />
-            Publicar
-          </Button>
-          <Button
-            variant="brand"
-            size="icon"
-            onClick={onCreatePost}
-            aria-label="Crear publicación"
-            className="sm:hidden"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+          {onCreatePost && (
+            <>
+              <Button
+                variant="brand"
+                size="sm"
+                onClick={onCreatePost}
+                className="hidden gap-1.5 sm:inline-flex"
+              >
+                <Plus className="h-4 w-4" />
+                Publicar
+              </Button>
+              <Button
+                variant="brand"
+                size="icon"
+                onClick={onCreatePost}
+                aria-label="Crear publicación"
+                className="sm:hidden"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </>
+          )}
 
           <Button
             variant={discreet ? "default" : "ghost"}
@@ -116,13 +128,15 @@ export function Header({ city, onCityChange, favoritesCount, onCreatePost }: Hea
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative" aria-label="Favoritos">
-            <Heart className="h-5 w-5" />
-            {favoritesCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
-                {favoritesCount}
-              </span>
-            )}
+          <Button asChild variant="ghost" size="icon" className="relative" aria-label="Favoritos">
+            <Link href="/profile">
+              <Heart className="h-5 w-5" />
+              {favoritesCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                  {favoritesCount}
+                </span>
+              )}
+            </Link>
           </Button>
 
           {isLoggedIn && (

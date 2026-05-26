@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   BadgeCheck,
   BarChart3,
-  Bell,
   Camera,
   Edit3,
   Eye,
@@ -36,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Header } from "@/components/header";
 import { CreatePostDrawer } from "@/components/create-post-drawer";
 import { DiscreetCover } from "@/components/discreet-cover";
 import { LoginDialog } from "@/components/login-dialog";
@@ -91,7 +91,10 @@ export function AccountProfile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopBar user={user} />
+      <Header
+        favoritesCount={favorites.size}
+        onCreatePost={isProvider ? () => setCreateOpen(true) : undefined}
+      />
 
       {/* Full-bleed cover */}
       <CoverSection role={user.role} />
@@ -226,66 +229,6 @@ export function AccountProfile() {
         onClear={clearPrefs}
       />
     </div>
-  );
-}
-
-/* -------------------- Top bar -------------------- */
-
-function TopBar({ user }: { user: SessionUser }) {
-  return (
-    <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
-        <Link
-          href="/"
-          aria-label="Ir al inicio"
-          className="-ml-1 flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-accent"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-            F
-          </span>
-          <span className="hidden text-lg font-bold tracking-tight text-brand sm:inline">
-            flitr<span className="text-primary">hub</span>
-          </span>
-        </Link>
-
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            aria-label="Notificaciones"
-            className="relative"
-          >
-            <Link href="#">
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            aria-label="Centro de chat"
-            className="relative"
-          >
-            <Link href="/chat" target="_blank" rel="noopener">
-              <MessageSquare className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <Link
-            href="/profile"
-            aria-label="Mi cuenta"
-            className="ml-1 rounded-full ring-offset-background transition-shadow hover:ring-2 hover:ring-primary/40 hover:ring-offset-2"
-          >
-            <Avatar className="h-9 w-9">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name[0]}</AvatarFallback>
-            </Avatar>
-          </Link>
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -429,7 +372,7 @@ function ProfileTabs({
   onChange: (t: TabId) => void;
 }) {
   return (
-    <div className="sticky top-14 z-20 -mx-4 mt-6 border-b bg-background/95 px-4 backdrop-blur md:-mx-6 md:px-6">
+    <div className="sticky top-16 z-20 -mx-4 mt-6 border-b bg-background/95 px-4 backdrop-blur md:-mx-6 md:px-6">
       <div className="flex overflow-x-auto">
         {tabs.map((t) => {
           const isActive = t.id === active;

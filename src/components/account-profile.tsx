@@ -11,7 +11,6 @@ import {
   Eye,
   Heart,
   Info,
-  LogOut,
   Mail,
   MapPin,
   MessageCircle,
@@ -21,7 +20,6 @@ import {
   Plus,
   Repeat,
   Search,
-  Settings,
   Share2,
   Sparkles,
   Star,
@@ -34,7 +32,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Header } from "@/components/header";
 import { CreatePostDrawer } from "@/components/create-post-drawer";
 import { DiscreetCover } from "@/components/discreet-cover";
@@ -55,11 +52,10 @@ type TabId =
   | "reviews"
   | "favorites"
   | "chats"
-  | "preferences"
-  | "settings";
+  | "preferences";
 
 export function AccountProfile() {
-  const { user, isLoggedIn, switchRole, logout } = useSession();
+  const { user, isLoggedIn, switchRole } = useSession();
   const { favorites, toggleFavorite } = useFavorites();
   const { prefs, save: savePrefs, clear: clearPrefs } = useUserPreferences();
   const { chats } = useChat();
@@ -79,14 +75,12 @@ export function AccountProfile() {
         { id: "overview", label: "Resumen", icon: BarChart3 },
         { id: "posts", label: "Publicaciones", icon: Sparkles },
         { id: "reviews", label: "Reseñas", icon: Star },
-        { id: "settings", label: "Configuración", icon: Settings },
       ]
     : [
         { id: "overview", label: "Resumen", icon: BarChart3 },
         { id: "favorites", label: "Favoritos", icon: Heart },
         { id: "chats", label: "Conversaciones", icon: MessageSquare },
         { id: "preferences", label: "Preferencias", icon: Target },
-        { id: "settings", label: "Configuración", icon: Settings },
       ];
 
   return (
@@ -208,14 +202,6 @@ export function AccountProfile() {
               </TabPanel>
             )}
 
-            {tab === "settings" && (
-              <TabPanel
-                title="Configuración de cuenta"
-                subtitle="Datos de contacto y notificaciones"
-              >
-                <AccountSettings user={user} onLogout={logout} />
-              </TabPanel>
-            )}
           </div>
         </div>
       </div>
@@ -1135,60 +1121,6 @@ function PreferencesSummary({
           Tienes preferencias activas. Edita en cualquier momento desde aquí o
           desde el botón &quot;Mis preferencias&quot; en el feed.
         </p>
-      </div>
-    </Card>
-  );
-}
-
-function AccountSettings({
-  user,
-  onLogout,
-}: {
-  user: SessionUser;
-  onLogout: () => void;
-}) {
-  const rows: { label: string; value: string }[] = [
-    { label: "Nombre", value: user.name },
-    { label: "Correo", value: user.email },
-    { label: "Teléfono / WhatsApp", value: user.phone },
-    { label: "Ciudad", value: user.city },
-  ];
-
-  return (
-    <Card>
-      <div className="divide-y">
-        {rows.map((r) => (
-          <div
-            key={r.label}
-            className="flex items-center justify-between gap-3 px-5 py-3"
-          >
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                {r.label}
-              </p>
-              <p className="truncate text-sm font-medium">{r.value}</p>
-            </div>
-            <Button variant="ghost" size="sm" className="gap-1 text-xs">
-              <Pencil className="h-3.5 w-3.5" />
-              Editar
-            </Button>
-          </div>
-        ))}
-      </div>
-      <Separator />
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-        <p className="text-xs text-muted-foreground">
-          ¿Quieres salir de tu cuenta?
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onLogout}
-          className="gap-1.5 text-destructive hover:bg-destructive/10"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Cerrar sesión
-        </Button>
       </div>
     </Card>
   );

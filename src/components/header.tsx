@@ -16,7 +16,6 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -241,16 +240,7 @@ export function Header({
                 {/* Menu items */}
                 <div className="p-1.5">
                   <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2">
-                    <Link href="/profile">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-foreground">
-                        <User className="h-3.5 w-3.5" />
-                      </span>
-                      <span className="flex-1 text-sm">Mi cuenta</span>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2">
-                    <Link href="/profile">
+                    <Link href="/settings">
                       <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-foreground">
                         <Settings className="h-3.5 w-3.5" />
                       </span>
@@ -283,7 +273,10 @@ export function Header({
 
                 <div className="p-1.5">
                   <DropdownMenuItem
-                    onClick={logout}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setLogoutOpen(true);
+                    }}
                     className="cursor-pointer gap-2.5 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
                   >
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-destructive/10 text-destructive">
@@ -313,6 +306,43 @@ export function Header({
       </div>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+
+      <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeaderUi>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <LogOut className="h-5 w-5" />
+            </div>
+            <DialogTitle className="text-center">
+              ¿Cerrar sesión?
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Tendrás que volver a iniciar sesión para acceder a tu cuenta,
+              favoritos y conversaciones.
+            </DialogDescription>
+          </DialogHeaderUi>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setLogoutOpen(false)}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setLogoutOpen(false);
+                logout();
+              }}
+              className="flex-1 gap-1.5"
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar sesión
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

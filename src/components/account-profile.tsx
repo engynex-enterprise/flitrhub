@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowLeft,
   BadgeCheck,
   BarChart3,
   Bell,
@@ -12,6 +11,7 @@ import {
   Edit3,
   Eye,
   Heart,
+  Info,
   LogOut,
   Mail,
   MapPin,
@@ -49,6 +49,15 @@ import { generatePosts, getPostById, type Post } from "@/lib/mock-posts";
 import { formatCOP } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+type TabId =
+  | "overview"
+  | "posts"
+  | "reviews"
+  | "favorites"
+  | "chats"
+  | "preferences"
+  | "settings";
+
 export function AccountProfile() {
   const { user, isLoggedIn, switchRole, logout } = useSession();
   const { favorites, toggleFavorite } = useFavorites();
@@ -57,40 +66,156 @@ export function AccountProfile() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [tab, setTab] = useState<TabId>("overview");
 
   if (!isLoggedIn || !user) {
     return <LoggedOutState />;
   }
 
+  const isProvider = user.role === "provider";
+
+  const tabs: { id: TabId; label: string; icon: typeof Eye }[] = isProvider
+    ? [
+        { id: "overview", label: "Resumen", icon: BarChart3 },
+        { id: "posts", label: "Publicaciones", icon: Sparkles },
+        { id: "reviews", label: "Reseñas", icon: Star },
+        { id: "settings", label: "Configuración", icon: Settings },
+      ]
+    : [
+        { id: "overview", label: "Resumen", icon: BarChart3 },
+        { id: "favorites", label: "Favoritos", icon: Heart },
+        { id: "chats", label: "Conversaciones", icon: MessageSquare },
+        { id: "preferences", label: "Preferencias", icon: Target },
+        { id: "settings", label: "Configuración", icon: Settings },
+      ];
+
   return (
     <div className="min-h-screen bg-background">
-      <TopBar />
+      <TopBar user={user} />
 
-      <main className="mx-auto max-w-5xl px-4 pb-16 md:px-6">
-        <ProfileHero
+      {/* Full-bleed cover */}
+      <CoverSection role={user.role} />
+
+      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+        <ProfileHeader
           user={user}
+          isProvider={isProvider}
           onCreate={() => setCreateOpen(true)}
-          onSwitchRole={switchRole}
         />
 
-        {user.role === "provider" ? (
-          <ProviderView
+        <ProfileTabs tabs={tabs} active={tab} onChange={setTab} />
+
+        <div className="grid gap-6 pb-16 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <ProfileSidebar
             user={user}
-            onCreate={() => setCreateOpen(true)}
-            onLogout={logout}
-          />
-        ) : (
-          <ClientView
+            isProvider={isProvider}
+            favoritesCount={favorites.size}
             chatsCount={chats.length}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            onOpenPrefs={() => setPrefsOpen(true)}
-            hasPrefs={hasAnyPreference(prefs)}
-            user={user}
-            onLogout={logout}
+            onSwitchRole={switchRole}
           />
-        )}
-      </main>
+
+          <div className="min-w-0">
+            {tab === "overview" && (
+              <OverviewTab
+                user={user}
+                isProvider={isProvider}
+                chatsCount={chats.length}
+                favoritesCount={favorites.size}
+                onCreate={() => setCreateOpen(true)}
+                onOpenPrefs={() => setPrefsOpen(true)}
+                onGoTab={setTab}
+              />
+            )}
+
+            {tab === "posts" && (
+              <TabPanel
+                title="Mis publicaciones"
+                subtitle="Perfiles que tienes activos en la plataforma"
+                action={
+                  <Button
+                    variant="brand"
+                    size="sm"
+                    onClick={() => setCreateOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Nueva publicación
+                  </Button>
+                }
+              >
+                <MyPosts onCreate={() => setCreateOpen(true)} />
+              </TabPanel>
+            )}
+
+            {tab === "reviews" && (
+              <TabPanel
+                title="Reseñas recibidas"
+                subtitle="Lo que opinan tus clientes"
+              >
+                <ProviderReviews />
+              </TabPanel>
+            )}
+
+            {tab === "favorites" && (
+              <TabPanel
+                title="Favoritos"
+                subtitle="Perfiles que has guardado para volver más tarde"
+                count={favorites.size}
+              >
+                <FavoritesGrid favorites={favorites} onToggle={toggleFavorite} />
+              </TabPanel>
+            )}
+
+            {tab === "chats" && (
+              <TabPanel
+                title="Mis conversaciones"
+                subtitle="Continúa donde lo dejaste"
+                action={
+                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+                    <Link href="/chat" target="_blank" rel="noopener">
+                      Abrir centro de chat
+                    </Link>
+                  </Button>
+                }
+              >
+                <RecentChats />
+              </TabPanel>
+            )}
+
+            {tab === "preferences" && (
+              <TabPanel
+                title="Mis preferencias"
+                subtitle="Tus filtros guardados para personalizar recomendaciones"
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPrefsOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Editar
+                  </Button>
+                }
+              >
+                <PreferencesSummary
+                  hasPrefs={hasAnyPreference(prefs)}
+                  onConfigure={() => setPrefsOpen(true)}
+                />
+              </TabPanel>
+            )}
+
+            {tab === "settings" && (
+              <TabPanel
+                title="Configuración de cuenta"
+                subtitle="Datos de contacto y notificaciones"
+              >
+                <AccountSettings user={user} onLogout={logout} />
+              </TabPanel>
+            )}
+          </div>
+        </div>
+      </div>
 
       <CreatePostDrawer open={createOpen} onOpenChange={setCreateOpen} />
       <PreferencesDialog
@@ -106,157 +231,165 @@ export function AccountProfile() {
 
 /* -------------------- Top bar -------------------- */
 
-function TopBar() {
+function TopBar({ user }: { user: SessionUser }) {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4 md:px-6">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5">
-          <Link href="/">
-            <ArrowLeft className="h-4 w-4" />
-            Inicio
-          </Link>
-        </Button>
-        <h1 className="text-sm font-bold tracking-tight">Mi cuenta</h1>
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
+        <Link
+          href="/"
+          aria-label="Ir al inicio"
+          className="-ml-1 flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-accent"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+            F
+          </span>
+          <span className="hidden text-lg font-bold tracking-tight text-brand sm:inline">
+            flitr<span className="text-primary">hub</span>
+          </span>
+        </Link>
+
         <div className="ml-auto flex items-center gap-1">
-          <Button asChild variant="ghost" size="icon" aria-label="Notificaciones">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label="Notificaciones"
+            className="relative"
+          >
             <Link href="#">
               <Bell className="h-4 w-4" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
             </Link>
           </Button>
-          <Button asChild variant="ghost" size="icon" aria-label="Centro de chat">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label="Centro de chat"
+            className="relative"
+          >
             <Link href="/chat" target="_blank" rel="noopener">
               <MessageSquare className="h-4 w-4" />
             </Link>
           </Button>
+
+          <Link
+            href="/profile"
+            aria-label="Mi cuenta"
+            className="ml-1 rounded-full ring-offset-background transition-shadow hover:ring-2 hover:ring-primary/40 hover:ring-offset-2"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>{user.name[0]}</AvatarFallback>
+            </Avatar>
+          </Link>
         </div>
       </div>
     </header>
   );
 }
 
-/* -------------------- Hero (shared) -------------------- */
+/* -------------------- Cover (full bleed) -------------------- */
 
-function ProfileHero({
-  user,
-  onCreate,
-  onSwitchRole,
-}: {
-  user: SessionUser;
-  onCreate: () => void;
-  onSwitchRole: () => void;
-}) {
-  const isProvider = user.role === "provider";
-
+function CoverSection({ role }: { role: UserRole }) {
   return (
-    <section className="relative mt-6 overflow-hidden rounded-2xl border bg-card">
-      {/* Cover */}
-      <div className="bg-gradient-sensual relative h-32 md:h-40">
-        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/30 blur-3xl" />
-        <div className="absolute -left-12 -bottom-8 h-32 w-32 rounded-full bg-gold/20 blur-3xl" />
+    <div className="bg-gradient-sensual relative h-44 w-full overflow-hidden md:h-64">
+      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
+      <div className="absolute -left-20 -bottom-16 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+
+      <div className="mx-auto flex h-full max-w-6xl items-start justify-between px-4 pt-4 md:px-6">
+        <RoleBadge role={role} />
         <button
           type="button"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
+          className="flex items-center gap-1.5 rounded-lg bg-black/40 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-black/60"
           aria-label="Cambiar portada"
         >
           <Camera className="h-3.5 w-3.5" />
+          Editar portada
         </button>
-        <RoleBadge role={user.role} className="absolute left-3 top-3" />
       </div>
+    </div>
+  );
+}
 
-      {/* Avatar + info */}
-      <div className="relative px-5 pb-5 pt-0">
-        <div className="-mt-12 flex items-end justify-between gap-3">
-          <div className="relative">
-            <Avatar className="no-blur h-24 w-24 ring-4 ring-card md:h-28 md:w-28">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name[0]}</AvatarFallback>
-            </Avatar>
-            <button
-              type="button"
-              className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground hover:bg-primary/90"
-              aria-label="Cambiar foto"
-            >
-              <Camera className="h-3 w-3" />
-            </button>
-          </div>
+/* -------------------- Profile header -------------------- */
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Edit3 className="h-3.5 w-3.5" />
-              Editar perfil
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Share2 className="h-3.5 w-3.5" />
-              Compartir
-            </Button>
-            {isProvider ? (
-              <Button
-                variant="brand"
-                size="sm"
-                onClick={onCreate}
-                className="gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Publicar
-              </Button>
-            ) : (
-              <Button asChild variant="brand" size="sm" className="gap-1.5">
-                <Link href="/">
-                  <Search className="h-3.5 w-3.5" />
-                  Buscar
-                </Link>
-              </Button>
-            )}
-          </div>
+function ProfileHeader({
+  user,
+  isProvider,
+  onCreate,
+}: {
+  user: SessionUser;
+  isProvider: boolean;
+  onCreate: () => void;
+}) {
+  return (
+    <div className="relative -mt-16 flex flex-col gap-4 md:-mt-20 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
+        <div className="relative">
+          <Avatar className="no-blur h-32 w-32 ring-4 ring-background md:h-40 md:w-40">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="text-3xl">{user.name[0]}</AvatarFallback>
+          </Avatar>
+          <button
+            type="button"
+            className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground hover:bg-primary/90"
+            aria-label="Cambiar foto"
+          >
+            <Camera className="h-3.5 w-3.5" />
+          </button>
         </div>
 
-        <div className="mt-4">
+        <div className="pb-2">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">{user.name}</h2>
-            <BadgeCheck className="h-5 w-5 fill-sky-500 text-white" />
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+              {user.name}
+            </h2>
+            <BadgeCheck className="h-6 w-6 fill-sky-500 text-white" />
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Mail className="h-3.5 w-3.5" />
-              {user.email}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Phone className="h-3.5 w-3.5" />
-              {user.phone}
-            </span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
               {user.city}
             </span>
+            <span className="inline-flex items-center gap-1">
+              <Mail className="h-3.5 w-3.5" />
+              {user.email}
+            </span>
           </p>
         </div>
+      </div>
 
-        {/* Role switch */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 p-3">
-          <div className="min-w-0 text-xs">
-            <p className="font-semibold">
-              {isProvider
-                ? "¿También buscas servicios?"
-                : "¿Quieres ofrecer servicios?"}
-            </p>
-            <p className="text-muted-foreground">
-              {isProvider
-                ? "Cambia a cuenta cliente para explorar perfiles."
-                : "Conviértete en anunciante y publica tu perfil."}
-            </p>
-          </div>
+      <div className="flex flex-wrap gap-2 pb-2">
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Edit3 className="h-3.5 w-3.5" />
+          Editar perfil
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Share2 className="h-3.5 w-3.5" />
+          Compartir
+        </Button>
+        {isProvider ? (
           <Button
-            variant="outline"
+            variant="brand"
             size="sm"
-            onClick={onSwitchRole}
+            onClick={onCreate}
             className="gap-1.5"
           >
-            <Repeat className="h-3.5 w-3.5" />
-            Cambiar a {isProvider ? "cliente" : "anunciante"}
+            <Plus className="h-3.5 w-3.5" />
+            Publicar
           </Button>
-        </div>
+        ) : (
+          <Button asChild variant="brand" size="sm" className="gap-1.5">
+            <Link href="/">
+              <Search className="h-3.5 w-3.5" />
+              Buscar perfiles
+            </Link>
+          </Button>
+        )}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -284,93 +417,411 @@ function RoleBadge({
   );
 }
 
-/* -------------------- Provider view -------------------- */
+/* -------------------- Tabs -------------------- */
 
-function ProviderView({
-  user,
-  onCreate,
-  onLogout,
+function ProfileTabs({
+  tabs,
+  active,
+  onChange,
 }: {
-  user: SessionUser;
-  onCreate: () => void;
-  onLogout: () => void;
+  tabs: { id: TabId; label: string; icon: typeof Eye }[];
+  active: TabId;
+  onChange: (t: TabId) => void;
 }) {
   return (
-    <>
-      <StatsRow
-        stats={[
-          {
-            label: "Visitas a tus perfiles",
-            value: "12.4k",
-            icon: Eye,
-            tone: "text-sky-400 bg-sky-500/10",
-          },
-          {
-            label: "Favoritos recibidos",
-            value: "843",
-            icon: Heart,
-            tone: "text-rose-400 bg-rose-500/10",
-          },
-          {
-            label: "Contactos esta semana",
-            value: "127",
-            icon: MessageCircle,
-            tone: "text-primary bg-primary/10",
-          },
-          {
-            label: "Rating promedio",
-            value: "4.8",
-            icon: Star,
-            tone: "text-gold bg-amber-500/10",
-          },
-        ]}
-      />
-
-      <Section
-        icon={Sparkles}
-        title="Mis publicaciones"
-        subtitle="Perfiles que tienes activos en la plataforma"
-        action={
-          <Button
-            variant="brand"
-            size="sm"
-            onClick={onCreate}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            Nueva publicación
-          </Button>
-        }
-      >
-        <MyPosts onCreate={onCreate} />
-      </Section>
-
-      <Section
-        icon={BarChart3}
-        title="Estadísticas"
-        subtitle="Cómo se desempeñan tus publicaciones esta semana"
-      >
-        <ProviderStats />
-      </Section>
-
-      <Section
-        icon={Star}
-        title="Reseñas recibidas"
-        subtitle="Lo que opinan tus clientes"
-      >
-        <ProviderReviews />
-      </Section>
-
-      <Section
-        icon={Settings}
-        title="Configuración de cuenta"
-        subtitle="Datos de contacto y notificaciones"
-      >
-        <AccountSettings user={user} onLogout={onLogout} />
-      </Section>
-    </>
+    <div className="sticky top-14 z-20 -mx-4 mt-6 border-b bg-background/95 px-4 backdrop-blur md:-mx-6 md:px-6">
+      <div className="flex overflow-x-auto">
+        {tabs.map((t) => {
+          const isActive = t.id === active;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onChange(t.id)}
+              className={cn(
+                "relative inline-flex shrink-0 items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors",
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <t.icon className="h-4 w-4" />
+              {t.label}
+              {isActive && (
+                <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
+
+/* -------------------- Sidebar -------------------- */
+
+function ProfileSidebar({
+  user,
+  isProvider,
+  favoritesCount,
+  chatsCount,
+  onSwitchRole,
+}: {
+  user: SessionUser;
+  isProvider: boolean;
+  favoritesCount: number;
+  chatsCount: number;
+  onSwitchRole: () => void;
+}) {
+  return (
+    <aside className="mt-6 flex flex-col gap-4 lg:sticky lg:top-32 lg:self-start">
+      <Card className="p-5">
+        <h3 className="flex items-center gap-2 text-sm font-bold">
+          <Info className="h-4 w-4 text-primary" />
+          Sobre mí
+        </h3>
+        <div className="mt-3 space-y-2.5 text-sm">
+          <InfoRow icon={Mail} label="Correo" value={user.email} />
+          <InfoRow icon={Phone} label="Teléfono" value={user.phone} />
+          <InfoRow icon={MapPin} label="Ciudad" value={user.city} />
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="text-sm font-bold">
+          {isProvider ? "Tu actividad" : "Tu cuenta"}
+        </h3>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {isProvider ? (
+            <>
+              <MiniStat icon={Eye} label="Visitas" value="12.4k" tone="text-sky-400" />
+              <MiniStat icon={Heart} label="Favs" value="843" tone="text-rose-400" />
+              <MiniStat
+                icon={MessageCircle}
+                label="Contactos"
+                value="127"
+                tone="text-primary"
+              />
+              <MiniStat icon={Star} label="Rating" value="4.8" tone="text-gold" />
+            </>
+          ) : (
+            <>
+              <MiniStat icon={Eye} label="Visitados" value="47" tone="text-sky-400" />
+              <MiniStat
+                icon={Heart}
+                label="Favoritos"
+                value={String(favoritesCount)}
+                tone="text-rose-400"
+              />
+              <MiniStat
+                icon={MessageCircle}
+                label="Chats"
+                value={String(chatsCount)}
+                tone="text-primary"
+              />
+              <MiniStat icon={Star} label="Reseñas" value="12" tone="text-gold" />
+            </>
+          )}
+        </div>
+      </Card>
+
+      <Card className="bg-muted/30 p-5">
+        <p className="text-sm font-semibold">
+          {isProvider
+            ? "¿También buscas servicios?"
+            : "¿Quieres ofrecer servicios?"}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {isProvider
+            ? "Cambia a cuenta cliente para explorar perfiles."
+            : "Conviértete en anunciante y publica tu perfil."}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSwitchRole}
+          className="mt-3 w-full gap-1.5"
+        >
+          <Repeat className="h-3.5 w-3.5" />
+          Cambiar a {isProvider ? "cliente" : "anunciante"}
+        </Button>
+      </Card>
+    </aside>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Mail;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <p className="truncate text-sm font-medium">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Eye;
+  label: string;
+  value: string;
+  tone: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-background p-2.5">
+      <div className="flex items-center gap-1.5">
+        <Icon className={cn("h-3.5 w-3.5", tone)} />
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <p className="mt-1 text-base font-bold">{value}</p>
+    </div>
+  );
+}
+
+/* -------------------- Tab panel -------------------- */
+
+function TabPanel({
+  title,
+  subtitle,
+  action,
+  count,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+  count?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-6">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
+            {title}
+            {count !== undefined && (
+              <span className="ml-1 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
+                {count}
+              </span>
+            )}
+          </h2>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          )}
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* -------------------- Overview -------------------- */
+
+function OverviewTab({
+  user,
+  isProvider,
+  chatsCount,
+  favoritesCount,
+  onCreate,
+  onOpenPrefs,
+  onGoTab,
+}: {
+  user: SessionUser;
+  isProvider: boolean;
+  chatsCount: number;
+  favoritesCount: number;
+  onCreate: () => void;
+  onOpenPrefs: () => void;
+  onGoTab: (t: TabId) => void;
+}) {
+  return (
+    <div className="mt-6 space-y-6">
+      <StatsRow
+        stats={
+          isProvider
+            ? [
+                {
+                  label: "Visitas a tus perfiles",
+                  value: "12.4k",
+                  icon: Eye,
+                  tone: "text-sky-400 bg-sky-500/10",
+                },
+                {
+                  label: "Favoritos recibidos",
+                  value: "843",
+                  icon: Heart,
+                  tone: "text-rose-400 bg-rose-500/10",
+                },
+                {
+                  label: "Contactos esta semana",
+                  value: "127",
+                  icon: MessageCircle,
+                  tone: "text-primary bg-primary/10",
+                },
+                {
+                  label: "Rating promedio",
+                  value: "4.8",
+                  icon: Star,
+                  tone: "text-gold bg-amber-500/10",
+                },
+              ]
+            : [
+                {
+                  label: "Perfiles visitados",
+                  value: "47",
+                  icon: Eye,
+                  tone: "text-sky-400 bg-sky-500/10",
+                },
+                {
+                  label: "Favoritos guardados",
+                  value: String(favoritesCount),
+                  icon: Heart,
+                  tone: "text-rose-400 bg-rose-500/10",
+                },
+                {
+                  label: "Chats activos",
+                  value: String(chatsCount),
+                  icon: MessageCircle,
+                  tone: "text-primary bg-primary/10",
+                },
+                {
+                  label: "Reseñas dadas",
+                  value: "12",
+                  icon: Star,
+                  tone: "text-gold bg-amber-500/10",
+                },
+              ]
+        }
+      />
+
+      {isProvider ? (
+        <>
+          <OverviewSection
+            title="Estadísticas"
+            subtitle="Cómo se desempeñan tus publicaciones esta semana"
+            icon={BarChart3}
+          >
+            <ProviderStats />
+          </OverviewSection>
+
+          <OverviewSection
+            title="Publicaciones recientes"
+            icon={Sparkles}
+            onSeeAll={() => onGoTab("posts")}
+            action={
+              <Button
+                variant="brand"
+                size="sm"
+                onClick={onCreate}
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                Nueva publicación
+              </Button>
+            }
+          >
+            <MyPosts onCreate={onCreate} />
+          </OverviewSection>
+        </>
+      ) : (
+        <>
+          <OverviewSection
+            title="Continúa tus chats"
+            icon={MessageSquare}
+            onSeeAll={() => onGoTab("chats")}
+          >
+            <RecentChats />
+          </OverviewSection>
+
+          <OverviewSection
+            title="Tus preferencias"
+            icon={Target}
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenPrefs}
+                className="gap-1.5"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Editar
+              </Button>
+            }
+          >
+            <PreferencesSummary hasPrefs={false} onConfigure={onOpenPrefs} />
+          </OverviewSection>
+        </>
+      )}
+    </div>
+  );
+}
+
+function OverviewSection({
+  title,
+  subtitle,
+  icon: Icon,
+  action,
+  onSeeAll,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: typeof Eye;
+  action?: React.ReactNode;
+  onSeeAll?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="flex items-center gap-2 text-base font-bold tracking-tight">
+            <Icon className="h-4 w-4 text-primary" />
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {action}
+          {onSeeAll && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSeeAll}
+              className="text-xs"
+            >
+              Ver todo
+            </Button>
+          )}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* -------------------- Provider sections -------------------- */
 
 function ProviderStats() {
   const items = [
@@ -403,7 +854,7 @@ function ProviderReviews() {
     { author: "Felipe R.", rating: 4, body: "Buena comunicación, volvería sin dudarlo.", date: "Hace 1 semana" },
   ];
   return (
-    <div className="grid gap-3 md:grid-cols-3">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {reviews.map((r) => (
         <Card key={r.author} className="p-4">
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -421,112 +872,7 @@ function ProviderReviews() {
   );
 }
 
-/* -------------------- Client view -------------------- */
-
-function ClientView({
-  chatsCount,
-  favorites,
-  onToggleFavorite,
-  onOpenPrefs,
-  hasPrefs,
-  user,
-  onLogout,
-}: {
-  chatsCount: number;
-  favorites: Set<string>;
-  onToggleFavorite: (id: string) => void;
-  onOpenPrefs: () => void;
-  hasPrefs: boolean;
-  user: SessionUser;
-  onLogout: () => void;
-}) {
-  return (
-    <>
-      <StatsRow
-        stats={[
-          {
-            label: "Perfiles visitados",
-            value: "47",
-            icon: Eye,
-            tone: "text-sky-400 bg-sky-500/10",
-          },
-          {
-            label: "Favoritos guardados",
-            value: String(favorites.size),
-            icon: Heart,
-            tone: "text-rose-400 bg-rose-500/10",
-          },
-          {
-            label: "Chats activos",
-            value: String(chatsCount),
-            icon: MessageCircle,
-            tone: "text-primary bg-primary/10",
-          },
-          {
-            label: "Reseñas dadas",
-            value: "12",
-            icon: Star,
-            tone: "text-gold bg-amber-500/10",
-          },
-        ]}
-      />
-
-      <Section
-        icon={Heart}
-        title="Favoritos"
-        subtitle="Perfiles que has guardado para volver más tarde"
-        count={favorites.size}
-      >
-        <FavoritesGrid favorites={favorites} onToggle={onToggleFavorite} />
-      </Section>
-
-      <Section
-        icon={Target}
-        title="Mis preferencias"
-        subtitle="Tus filtros guardados para personalizar recomendaciones"
-        action={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenPrefs}
-            className="gap-1.5"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Editar
-          </Button>
-        }
-      >
-        <PreferencesSummary
-          hasPrefs={hasPrefs}
-          onConfigure={onOpenPrefs}
-        />
-      </Section>
-
-      <Section
-        icon={MessageSquare}
-        title="Mis conversaciones"
-        subtitle="Continúa donde lo dejaste"
-        action={
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link href="/chat" target="_blank" rel="noopener">
-              Abrir centro de chat
-            </Link>
-          </Button>
-        }
-      >
-        <RecentChats />
-      </Section>
-
-      <Section
-        icon={Settings}
-        title="Configuración de cuenta"
-        subtitle="Datos de contacto y notificaciones"
-      >
-        <AccountSettings user={user} onLogout={onLogout} />
-      </Section>
-    </>
-  );
-}
+/* -------------------- Client sections -------------------- */
 
 function RecentChats() {
   const { chats } = useChat();
@@ -600,7 +946,7 @@ function StatsRow({
   }[];
 }) {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {stats.map((s) => (
         <Card key={s.label} className="p-4">
           <div className="flex items-center gap-3">
@@ -620,45 +966,6 @@ function StatsRow({
         </Card>
       ))}
     </div>
-  );
-}
-
-function Section({
-  icon: Icon,
-  title,
-  subtitle,
-  action,
-  count,
-  children,
-}: {
-  icon: typeof Eye;
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-  count?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-10">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Icon className="h-5 w-5 text-primary" />
-            {title}
-            {count !== undefined && (
-              <span className="ml-1 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
-                {count}
-              </span>
-            )}
-          </h2>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        {action}
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -796,7 +1103,7 @@ function FavoritesGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-3 xl:grid-cols-4">
       {items.map((post) => (
         <FavoriteCard key={post.id} post={post} onUnfavorite={() => onToggle(post.id)} />
       ))}

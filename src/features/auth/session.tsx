@@ -30,6 +30,7 @@ interface SessionContextValue {
   login: (role: UserRole) => void;
   logout: () => void;
   switchRole: () => void;
+  updateUser: (patch: Partial<Omit<SessionUser, "id" | "role">>) => void;
 }
 
 const STORAGE_KEY = "flitrhub:session";
@@ -64,7 +65,9 @@ function readStored(): SessionUser | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<SessionUser>;
     if (!parsed || !parsed.role) return null;
-    return parsed.role === "provider" ? MOCK_PROVIDER : MOCK_CLIENT;
+    const base = parsed.role === "provider" ? MOCK_PROVIDER : MOCK_CLIENT;
+    // Merge any persisted profile edits over the mock defaults.
+    return { ...base, ...parsed, role: base.role, id: base.id };
   } catch {
     return null;
   }
@@ -81,7 +84,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const persist = (u: SessionUser | null) => {
     try {
-      if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify({ role: u.role }));
+      if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
       else localStorage.removeItem(STORAGE_KEY);
     } catch {
       /* ignore */
@@ -108,6 +111,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const updateUser = useCallback(
+    (patch: Partial<Omit<SessionUser, "id" | "role">>) => {
+      setUser((prev) => {
+        if (!prev) return prev;
+        const next: SessionUser = { ...prev, ...patch };
+        persist(next);
+        return next;
+      });
+    },
+    []
+  );
+
   const value = useMemo<SessionContextValue>(
     () => ({
       user,
@@ -117,8 +132,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       switchRole,
+      updateUser,
     }),
-    [user, login, logout, switchRole]
+    [user, login, logout, switchRole, updateUser]
   );
 
   return (

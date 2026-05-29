@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -36,6 +36,7 @@ import { Header } from "@/features/layout/components/header";
 import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { LoginDialog } from "@/features/auth/components/login-dialog";
+import { EditProfileDialog } from "@/features/profile/components/edit-profile-dialog";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
 import { useSession, type SessionUser, type UserRole } from "@/features/auth/session";
@@ -62,7 +63,29 @@ export function AccountProfile() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("overview");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // Revoke object URLs on unmount / replacement to avoid leaks.
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+      if (coverPreview) URL.revokeObjectURL(coverPreview);
+    };
+  }, [avatarPreview, coverPreview]);
+
+  const handlePickImage = (
+    file: File | null,
+    setter: (url: string | null) => void,
+    current: string | null
+  ) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    if (current) URL.revokeObjectURL(current);
+    setter(URL.createObjectURL(file));
+  };
 
   if (!isLoggedIn || !user) {
     return <LoggedOutState />;
@@ -91,13 +114,24 @@ export function AccountProfile() {
       />
 
       {/* Full-bleed cover */}
-      <CoverSection role={user.role} />
+      <CoverSection
+        role={user.role}
+        coverUrl={coverPreview}
+        onPickCover={(file) =>
+          handlePickImage(file, setCoverPreview, coverPreview)
+        }
+      />
 
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <ProfileHeader
           user={user}
           isProvider={isProvider}
           onCreate={() => setCreateOpen(true)}
+          onEdit={() => setEditOpen(true)}
+          avatarUrl={avatarPreview ?? user.avatar}
+          onPickAvatar={(file) =>
+            handlePickImage(file, setAvatarPreview, avatarPreview)
+          }
         />
 
         <ProfileTabs tabs={tabs} active={tab} onChange={setTab} />
@@ -214,29 +248,61 @@ export function AccountProfile() {
         onSave={savePrefs}
         onClear={clearPrefs}
       />
+      <EditProfileDialog open={editOpen} onOpenChange={setEditOpen} />
     </div>
   );
 }
 
 /* -------------------- Cover (full bleed) -------------------- */
 
-function CoverSection({ role }: { role: UserRole }) {
+function CoverSection({
+  role,
+  coverUrl,
+  onPickCover,
+}: {
+  role: UserRole;
+  coverUrl: string | null;
+  onPickCover: (file: File | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="bg-gradient-sensual relative h-44 w-full overflow-hidden md:h-64">
-      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
-      <div className="absolute -left-20 -bottom-16 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+      {coverUrl ? (
+        <img
+          src={coverUrl}
+          alt="Portada"
+          className="no-blur absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <>
+          <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
+          <div className="absolute -left-20 -bottom-16 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+        </>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
 
-      <div className="mx-auto flex h-full max-w-6xl items-start justify-between px-4 pt-4 md:px-6">
+      <div className="relative mx-auto flex h-full max-w-6xl items-start justify-between px-4 pt-4 md:px-6">
         <RoleBadge role={role} />
         <button
           type="button"
+          onClick={() => inputRef.current?.click()}
           className="flex items-center gap-1.5 rounded-lg bg-black/40 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-black/60"
           aria-label="Cambiar portada"
         >
           <Camera className="h-3.5 w-3.5" />
-          Editar portada
+          {coverUrl ? "Cambiar portada" : "Editar portada"}
         </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            onPickCover(e.target.files?.[0] ?? null);
+            e.target.value = "";
+          }}
+        />
       </div>
     </div>
   );
@@ -248,26 +314,45 @@ function ProfileHeader({
   user,
   isProvider,
   onCreate,
+  onEdit,
+  avatarUrl,
+  onPickAvatar,
 }: {
   user: SessionUser;
   isProvider: boolean;
   onCreate: () => void;
+  onEdit: () => void;
+  avatarUrl: string;
+  onPickAvatar: (file: File | null) => void;
 }) {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="relative -mt-16 flex flex-col gap-4 md:-mt-20 md:flex-row md:items-end md:justify-between">
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-end">
         <div className="relative">
           <Avatar className="no-blur h-32 w-32 ring-4 ring-background md:h-40 md:w-40">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={avatarUrl} alt={user.name} />
             <AvatarFallback className="text-3xl">{user.name[0]}</AvatarFallback>
           </Avatar>
           <button
             type="button"
+            onClick={() => avatarInputRef.current?.click()}
             className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground hover:bg-primary/90"
             aria-label="Cambiar foto"
           >
             <Camera className="h-3.5 w-3.5" />
           </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              onPickAvatar(e.target.files?.[0] ?? null);
+              e.target.value = "";
+            }}
+          />
         </div>
 
         <div className="pb-2">
@@ -291,7 +376,12 @@ function ProfileHeader({
       </div>
 
       <div className="flex flex-wrap gap-2 pb-2">
-        <Button variant="outline" size="sm" className="gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onEdit}
+          className="gap-1.5"
+        >
           <Edit3 className="h-3.5 w-3.5" />
           Editar perfil
         </Button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ArrowUpRight,
   Calendar,
@@ -25,9 +26,11 @@ import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
 import {
   AD_PRODUCT_CATALOG,
+  type AdProductId,
   type AdProductMeta,
 } from "@/features/home/components/ads";
 
+import { AdTargetingDrawer } from "./ad-targeting-drawer";
 import {
   BarChartCmp,
   ChartCard,
@@ -138,6 +141,16 @@ function formatCOP(value: number): string {
 /* -------------------- Component -------------------- */
 
 export function ProviderAds() {
+  const [targetingOpen, setTargetingOpen] = useState(false);
+  const [initialProduct, setInitialProduct] = useState<AdProductId | undefined>(
+    undefined
+  );
+
+  const openTargeting = (product?: AdProductId) => {
+    setInitialProduct(product);
+    setTargetingOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <WalletCard />
@@ -184,7 +197,12 @@ export function ProviderAds() {
           title="Campañas activas"
           subtitle={`${ACTIVE_CAMPAIGNS.length} promociones en curso`}
           action={
-            <Button variant="brand" size="sm" className="gap-1.5">
+            <Button
+              variant="brand"
+              size="sm"
+              onClick={() => openTargeting()}
+              className="gap-1.5"
+            >
               <Plus className="h-3.5 w-3.5" />
               Nueva campaña
             </Button>
@@ -206,7 +224,11 @@ export function ProviderAds() {
         />
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {PRODUCTS.map((p) => (
-            <AdProductCard key={p.id} product={p} />
+            <AdProductCard
+              key={p.id}
+              product={p}
+              onBuy={() => openTargeting(p.id)}
+            />
           ))}
         </div>
       </section>
@@ -242,6 +264,12 @@ export function ProviderAds() {
           />
         </ChartCard>
       </div>
+
+      <AdTargetingDrawer
+        open={targetingOpen}
+        onOpenChange={setTargetingOpen}
+        initialProduct={initialProduct}
+      />
     </div>
   );
 }
@@ -446,7 +474,13 @@ function CampaignMini({
 
 /* -------------------- Product card -------------------- */
 
-function AdProductCard({ product }: { product: AdProductMeta }) {
+function AdProductCard({
+  product,
+  onBuy,
+}: {
+  product: AdProductMeta;
+  onBuy: () => void;
+}) {
   const Icon = product.icon;
   return (
     <Card
@@ -500,6 +534,7 @@ function AdProductCard({ product }: { product: AdProductMeta }) {
         <Button
           variant={product.highlight ? "brand" : "outline"}
           size="sm"
+          onClick={onBuy}
           className="gap-1.5"
         >
           Comprar

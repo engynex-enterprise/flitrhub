@@ -485,6 +485,51 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </Button>
             </div>
 
+            {/* Provider mini-card — links to the public provider profile */}
+            <Card className="p-3">
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/provider/${encodeURIComponent(post.id)}`}
+                  className="relative shrink-0"
+                  aria-label={`Ver perfil de ${post.name}`}
+                >
+                  <Avatar className="no-blur h-12 w-12 ring-2 ring-primary/30">
+                    <AvatarImage src={post.imageUrl} alt={post.name} />
+                    <AvatarFallback>{post.name[0]}</AvatarFallback>
+                  </Avatar>
+                  {post.isOnline && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-card" />
+                  )}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/provider/${encodeURIComponent(post.id)}`}
+                      className="truncate text-sm font-bold hover:underline"
+                    >
+                      {post.name}
+                    </Link>
+                    {post.verified && (
+                      <BadgeCheck className="h-4 w-4 fill-sky-500 text-white" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Anunciante en flitrhub · {post.reviewsCount} reseñas
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1.5"
+                >
+                  <Link href={`/provider/${encodeURIComponent(post.id)}`}>
+                    Ver perfil
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+
             {/* Verification card */}
             {post.verified && (
               <Card className="border-emerald-500/30 bg-emerald-500/5 p-4">

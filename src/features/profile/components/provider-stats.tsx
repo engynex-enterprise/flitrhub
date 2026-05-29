@@ -25,6 +25,8 @@ import {
 import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
 
+import { ProviderActivityFeed } from "./provider-activity-feed";
+
 /* -------------------- Mock data -------------------- */
 
 const VISITS_BY_DAY = [
@@ -241,31 +243,23 @@ export function ProviderStats() {
         </ChartCard>
       </div>
 
-      {/* Row 5 — Funnel + Ratings */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <ChartCard
-          title="Embudo de conversión"
-          subtitle="De visita a contacto"
-          icon={TrendingUp}
-        >
-          <Funnel steps={FUNNEL} />
-        </ChartCard>
+      {/* Row 5 — Funnel (full width; ratings moved to Reseñas sub-tab) */}
+      <ChartCard
+        title="Embudo de conversión"
+        subtitle="De visita a contacto"
+        icon={TrendingUp}
+      >
+        <Funnel steps={FUNNEL} />
+      </ChartCard>
+    </div>
+  );
+}
 
-        <ChartCard
-          title="Distribución de reseñas"
-          subtitle="128 reseñas totales"
-          icon={Star}
-        >
-          <RatingsBars data={RATINGS_DIST} />
-        </ChartCard>
-      </div>
+/* -------------------- Content (vault income) sub-tab -------------------- */
 
-      {/* -------------------- Vault income -------------------- */}
-      <SectionDivider
-        title="Ingresos del vault"
-        subtitle="Suscripciones, pay-per-view y propinas"
-      />
-
+export function ProviderStatsContent() {
+  return (
+    <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           label="Ingresos (30d)"
@@ -324,12 +318,16 @@ export function ProviderStats() {
         </ChartCard>
       </div>
 
-      {/* -------------------- Ads performance -------------------- */}
-      <SectionDivider
-        title="Desempeño de promociones"
-        subtitle="Campañas pagas: impresiones, CTR y conversión"
-      />
+      <ProviderActivityFeed />
+    </div>
+  );
+}
 
+/* -------------------- Ads performance sub-tab -------------------- */
+
+export function ProviderStatsAds() {
+  return (
+    <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           label="Impresiones (30d)"
@@ -389,13 +387,15 @@ export function ProviderStats() {
           <RankedBars items={ADS_BEST_CAMPAIGNS} />
         </ChartCard>
       </div>
+    </div>
+  );
+}
 
-      {/* -------------------- Reviews KPIs -------------------- */}
-      <SectionDivider
-        title="Reseñas"
-        subtitle="Calidad de tu reputación pública"
-      />
+/* -------------------- Reviews sub-tab -------------------- */
 
+export function ProviderStatsReviews() {
+  return (
+    <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           label="Total reseñas"
@@ -428,27 +428,14 @@ export function ProviderStats() {
           tone="text-gold bg-amber-500/10"
         />
       </div>
-    </div>
-  );
-}
 
-/* -------------------- Section divider -------------------- */
-
-function SectionDivider({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="border-t pt-4">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-        {title}
-      </h3>
-      {subtitle && (
-        <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
-      )}
+      <ChartCard
+        title="Distribución de reseñas"
+        subtitle="128 reseñas totales"
+        icon={Star}
+      >
+        <RatingsBars data={RATINGS_DIST} />
+      </ChartCard>
     </div>
   );
 }

@@ -41,7 +41,12 @@ import { ProviderAds } from "@/features/profile/components/provider-ads";
 import { ProviderContent } from "@/features/profile/components/provider-content";
 import { ProviderPostStats } from "@/features/profile/components/provider-post-stats";
 import { ProviderReviews } from "@/features/profile/components/provider-reviews";
-import { ProviderStats } from "@/features/profile/components/provider-stats";
+import {
+  ProviderStats,
+  ProviderStatsAds,
+  ProviderStatsContent,
+  ProviderStatsReviews,
+} from "@/features/profile/components/provider-stats";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
 import { useSession, type SessionUser, type UserRole } from "@/features/auth/session";
@@ -63,6 +68,16 @@ type TabId =
   | "chats"
   | "preferences";
 
+type StatsView = "general" | "posts" | "content" | "ads" | "reviews";
+
+const STATS_SUBTITLE: Record<StatsView, string> = {
+  general: "Audiencia, tráfico y conversión",
+  posts: "Descubre cuál publicación rinde mejor",
+  content: "Ingresos del vault, suscripciones y propinas",
+  ads: "Desempeño de campañas pagas",
+  reviews: "Calidad de tu reputación pública",
+};
+
 export function AccountProfile() {
   const { user, isLoggedIn, switchRole } = useSession();
   const { favorites, toggleFavorite } = useFavorites();
@@ -72,7 +87,7 @@ export function AccountProfile() {
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("overview");
-  const [statsView, setStatsView] = useState<"general" | "posts">("general");
+  const [statsView, setStatsView] = useState<StatsView>("general");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
@@ -107,7 +122,7 @@ export function AccountProfile() {
         { id: "posts", label: "Publicaciones", icon: Sparkles },
         { id: "content", label: "Contenido exclusivo", icon: Lock },
         { id: "metrics", label: "Estadísticas", icon: TrendingUp },
-        { id: "ads", label: "Promociones", icon: Megaphone },
+        { id: "ads", label: "Monetización", icon: Megaphone },
         { id: "reviews", label: "Reseñas", icon: Star },
       ]
     : [
@@ -194,40 +209,53 @@ export function AccountProfile() {
             {tab === "metrics" && (
               <TabPanel
                 title="Estadísticas"
-                subtitle={
-                  statsView === "general"
-                    ? "Desempeño general de tu cuenta"
-                    : "Descubre cuál publicación rinde mejor"
-                }
-                action={
-                  <div className="flex gap-1.5">
-                    <SubPill
-                      active={statsView === "general"}
-                      onClick={() => setStatsView("general")}
-                    >
-                      General
-                    </SubPill>
-                    <SubPill
-                      active={statsView === "posts"}
-                      onClick={() => setStatsView("posts")}
-                    >
-                      Por publicación
-                    </SubPill>
-                  </div>
-                }
+                subtitle={STATS_SUBTITLE[statsView]}
               >
-                {statsView === "general" ? (
-                  <ProviderStats />
-                ) : (
-                  <ProviderPostStats />
-                )}
+                <div className="mb-4 -mt-2 flex flex-wrap gap-1.5">
+                  <SubPill
+                    active={statsView === "general"}
+                    onClick={() => setStatsView("general")}
+                  >
+                    General
+                  </SubPill>
+                  <SubPill
+                    active={statsView === "posts"}
+                    onClick={() => setStatsView("posts")}
+                  >
+                    Por publicación
+                  </SubPill>
+                  <SubPill
+                    active={statsView === "content"}
+                    onClick={() => setStatsView("content")}
+                  >
+                    Contenido exclusivo
+                  </SubPill>
+                  <SubPill
+                    active={statsView === "ads"}
+                    onClick={() => setStatsView("ads")}
+                  >
+                    Promociones
+                  </SubPill>
+                  <SubPill
+                    active={statsView === "reviews"}
+                    onClick={() => setStatsView("reviews")}
+                  >
+                    Reseñas
+                  </SubPill>
+                </div>
+
+                {statsView === "general" && <ProviderStats />}
+                {statsView === "posts" && <ProviderPostStats />}
+                {statsView === "content" && <ProviderStatsContent />}
+                {statsView === "ads" && <ProviderStatsAds />}
+                {statsView === "reviews" && <ProviderStatsReviews />}
               </TabPanel>
             )}
 
             {tab === "ads" && (
               <TabPanel
-                title="Promociones y campañas"
-                subtitle="Compra ads, mejora posicionamiento y mide tu ROI"
+                title="Monetización"
+                subtitle="Compra promociones y configura tus tiers de suscripción"
               >
                 <ProviderAds />
               </TabPanel>
@@ -657,19 +685,19 @@ function OverviewTab({
     {
       id: "content",
       title: "Contenido exclusivo",
-      description: "Tiers de suscripción, vault privado y monetización.",
+      description: "Gestiona tu vault privado de fotos y videos.",
       icon: Heart,
     },
     {
       id: "metrics",
       title: "Estadísticas",
-      description: "Desempeño general y métricas por publicación.",
+      description: "5 vistas: General, por publicación, contenido, ads y reseñas.",
       icon: BarChart3,
     },
     {
       id: "ads",
-      title: "Promociones",
-      description: "Compra ads, crea campañas y mide tu ROI.",
+      title: "Monetización",
+      description: "Tiers de suscripción y campañas pagas en un solo lugar.",
       icon: Target,
     },
     {
@@ -726,6 +754,17 @@ function OverviewTab({
         </div>
       </Card>
 
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        {/* Profile completeness + checklist */}
+        <ProfileCompletenessCard
+          isProvider={isProvider}
+          onGoTab={onGoTab}
+        />
+
+        {/* Activity / notifications */}
+        <NotificationsCard isProvider={isProvider} />
+      </div>
+
       {/* Quick links */}
       <section>
         <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
@@ -742,6 +781,244 @@ function OverviewTab({
         </div>
       </section>
     </div>
+  );
+}
+
+/* -------------------- Profile completeness -------------------- */
+
+interface ChecklistItem {
+  id: string;
+  label: string;
+  done: boolean;
+  target?: TabId;
+}
+
+function ProfileCompletenessCard({
+  isProvider,
+  onGoTab,
+}: {
+  isProvider: boolean;
+  onGoTab: (t: TabId) => void;
+}) {
+  const items: ChecklistItem[] = isProvider
+    ? [
+        { id: "info", label: "Información básica completa", done: true },
+        { id: "avatar", label: "Foto de perfil agregada", done: true },
+        { id: "id", label: "Verifica tu identidad", done: false },
+        {
+          id: "post",
+          label: "Crea tu primera publicación",
+          done: true,
+          target: "posts",
+        },
+        {
+          id: "vault",
+          label: "Activa el vault de contenido exclusivo",
+          done: false,
+          target: "content",
+        },
+        {
+          id: "tiers",
+          label: "Configura al menos un tier de suscripción",
+          done: false,
+          target: "ads",
+        },
+      ]
+    : [
+        { id: "info", label: "Información básica completa", done: true },
+        { id: "avatar", label: "Foto de perfil agregada", done: true },
+        { id: "email", label: "Correo verificado", done: true },
+        {
+          id: "prefs",
+          label: "Configura tus preferencias",
+          done: false,
+          target: "preferences",
+        },
+        {
+          id: "fav",
+          label: "Guarda tu primer favorito",
+          done: false,
+          target: "favorites",
+        },
+      ];
+  const done = items.filter((i) => i.done).length;
+  const pct = Math.round((done / items.length) * 100);
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-bold">
+          <Info className="h-4 w-4 text-primary" />
+          Completa tu perfil
+        </h3>
+        <span className="text-2xl font-bold tabular-nums text-primary">
+          {pct}%
+        </span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-primary to-platino transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {done} de {items.length} pasos completados
+      </p>
+
+      <ul className="mt-3 space-y-1.5">
+        {items.map((it) => (
+          <li key={it.id} className="flex items-center gap-2 text-xs">
+            <span
+              className={cn(
+                "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+                it.done
+                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-400"
+                  : "border-border bg-background"
+              )}
+            >
+              {it.done && <CheckIcon />}
+            </span>
+            <span
+              className={cn(
+                "flex-1",
+                it.done
+                  ? "text-muted-foreground line-through"
+                  : "text-foreground"
+              )}
+            >
+              {it.label}
+            </span>
+            {!it.done && it.target && (
+              <button
+                type="button"
+                onClick={() => onGoTab(it.target!)}
+                className="text-[10px] font-semibold text-primary hover:underline"
+              >
+                Ir →
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden
+      className="h-2.5 w-2.5"
+    >
+      <path
+        fillRule="evenodd"
+        d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.29-7.296a1 1 0 011.414 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+/* -------------------- Notifications / recent activity -------------------- */
+
+interface Notification {
+  id: string;
+  icon: typeof Eye;
+  tone: string;
+  text: string;
+  ago: string;
+}
+
+function NotificationsCard({ isProvider }: { isProvider: boolean }) {
+  const items: Notification[] = isProvider
+    ? [
+        {
+          id: "n1",
+          icon: Star,
+          tone: "text-amber-400 bg-amber-500/15",
+          text: "Carlos M. dejó una reseña de 5 estrellas en Sofía.",
+          ago: "Hace 2 h",
+        },
+        {
+          id: "n2",
+          icon: Heart,
+          tone: "text-rose-400 bg-rose-500/15",
+          text: "Andrés P. se suscribió al tier Plus.",
+          ago: "Hace 4 h",
+        },
+        {
+          id: "n3",
+          icon: Megaphone,
+          tone: "text-primary bg-primary/15",
+          text: "Tu campaña Top de búsqueda alcanzó el 65% del presupuesto.",
+          ago: "Hace 6 h",
+        },
+        {
+          id: "n4",
+          icon: MessageSquare,
+          tone: "text-sky-400 bg-sky-500/15",
+          text: "Tienes 3 mensajes sin leer en tus chats.",
+          ago: "Hace 8 h",
+        },
+      ]
+    : [
+        {
+          id: "n1",
+          icon: Heart,
+          tone: "text-rose-400 bg-rose-500/15",
+          text: "Un perfil que guardaste subió nuevo contenido.",
+          ago: "Hace 1 h",
+        },
+        {
+          id: "n2",
+          icon: MessageSquare,
+          tone: "text-primary bg-primary/15",
+          text: "Mia te envió un mensaje.",
+          ago: "Hace 3 h",
+        },
+        {
+          id: "n3",
+          icon: Star,
+          tone: "text-amber-400 bg-amber-500/15",
+          text: "Aparecieron 4 perfiles nuevos en tu ciudad.",
+          ago: "Hace 6 h",
+        },
+      ];
+
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="border-b px-5 py-3">
+        <h3 className="text-sm font-bold">Actividad reciente</h3>
+        <p className="text-[11px] text-muted-foreground">
+          Notificaciones de las últimas horas
+        </p>
+      </div>
+      <ul className="divide-y">
+        {items.map((n) => {
+          const Icon = n.icon;
+          return (
+            <li key={n.id} className="flex items-start gap-3 px-5 py-3">
+              <div
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                  n.tone
+                )}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs leading-snug">{n.text}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  {n.ago}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }
 

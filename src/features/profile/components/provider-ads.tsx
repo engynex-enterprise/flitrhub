@@ -31,6 +31,7 @@ import {
 } from "@/features/home/components/ads";
 
 import { AdTargetingDrawer } from "./ad-targeting-drawer";
+import { ProviderTiersManager } from "./provider-tiers";
 
 /* -------------------- Mock data -------------------- */
 
@@ -179,6 +180,9 @@ export function ProviderAds() {
           ))}
         </div>
       </section>
+
+      {/* Subscription tiers — moved here from the Contenido exclusivo tab */}
+      <ProviderTiersManager />
 
       <AdTargetingDrawer
         open={targetingOpen}

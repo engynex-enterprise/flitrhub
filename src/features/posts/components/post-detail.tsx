@@ -49,6 +49,7 @@ import {
   AdPostBoostCard,
   AdSimilarSponsoredRow,
 } from "@/features/home/components/ads";
+import { SimilarProfileSponsoredCard } from "@/features/home/components/sponsored-content";
 import { ExclusiveContent } from "@/features/posts/components/exclusive-content";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
@@ -832,12 +833,26 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
           <ExclusiveContent post={post} />
         </div>
 
-        {/* Sponsored slot — only visible to providers */}
-        {isProvider && (
-          <div className="mt-10">
+        {/* Sponsored slot at the bottom — providers see the product CTA,
+            clients see actual sponsored similar profile content. */}
+        <div className="mt-10">
+          {isProvider ? (
             <AdSimilarSponsoredRow />
-          </div>
-        )}
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  Perfiles similares
+                </h3>
+              </div>
+              <SimilarProfileSponsoredCard
+                excludeId={post.id}
+                service={post.service}
+                city={post.city}
+              />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Lightbox / fullscreen viewer */}

@@ -13,6 +13,12 @@ import { Destacados } from "@/features/posts/components/destacados";
 import { Recomendados } from "@/features/posts/components/recomendados";
 import { QuickActions } from "@/features/home/components/quick-actions";
 import { AdBanner } from "@/features/home/components/ads";
+import {
+  HomeMainBanner,
+  MatchedPreferenceBanner,
+  PushNotificationToast,
+  TopOfServicePin,
+} from "@/features/home/components/sponsored-content";
 import { WelcomeAdModal } from "@/features/home/components/welcome-ad-modal";
 import { PostFeed } from "@/features/posts/components/post-feed";
 import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer";
@@ -207,7 +213,11 @@ export function HomeShell() {
           onOpenPreferences={() => setPrefsOpen(true)}
         />
 
-        {isProvider && <AdBanner className="mb-8" />}
+        {isProvider ? (
+          <AdBanner className="mb-8" />
+        ) : (
+          <HomeMainBanner service={active} city={city} className="mb-8" />
+        )}
 
         {hydrated && (
           <Recomendados
@@ -217,11 +227,23 @@ export function HomeShell() {
           />
         )}
 
+        {/* Match con preferencias — sponsored profile that matches saved filters */}
+        {hydrated && (
+          <div className="mb-8">
+            <MatchedPreferenceBanner service={active} city={city} />
+          </div>
+        )}
+
         <Destacados posts={featured} />
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold">Todos los perfiles</h2>
           <ViewSwitcher value={viewMode} onChange={setViewMode} />
+        </div>
+
+        {/* Top del servicio — pinned sponsored profile above the feed */}
+        <div className="mb-4">
+          <TopOfServicePin service={active} city={city} />
         </div>
 
         <PostFeed
@@ -260,6 +282,7 @@ export function HomeShell() {
       />
 
       <WelcomeAdModal />
+      <PushNotificationToast />
     </div>
   );
 }

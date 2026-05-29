@@ -1,17 +1,28 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BadgeCheck } from "lucide-react";
+
 import { cn } from "@/shared/lib/utils";
 import { services, type ServiceKey } from "@/features/posts/data/services";
 import { discreetLabel, useDiscreet } from "@/features/discreet/use-discreet";
-import { AdSidebarBlock } from "@/features/home/components/ads";
+import { AdSidebarBlock, SponsoredTag } from "@/features/home/components/ads";
+import { generateFeatured } from "@/features/posts/data/mock-posts";
 
 interface SidebarProps {
   active: ServiceKey;
   onSelect: (key: ServiceKey) => void;
   showAds?: boolean;
+  showSponsoredPick?: boolean;
 }
 
-export function Sidebar({ active, onSelect, showAds = false }: SidebarProps) {
+export function Sidebar({
+  active,
+  onSelect,
+  showAds = false,
+  showSponsoredPick = false,
+}: SidebarProps) {
   const { enabled: discreet } = useDiscreet();
 
   return (
@@ -61,6 +72,7 @@ export function Sidebar({ active, onSelect, showAds = false }: SidebarProps) {
         })}
 
         <div className="mt-auto space-y-3">
+          {showSponsoredPick && <SponsoredPickCard active={active} />}
           {showAds && <AdSidebarBlock />}
           <div className="rounded-xl border bg-muted/40 p-4">
             <p className="text-xs font-semibold text-muted-foreground">Aviso</p>
@@ -109,5 +121,44 @@ export function MobileServiceTabs({
         })}
       </div>
     </div>
+  );
+}
+
+/* Sponsored pick — a tiny "patrocinado" mini-profile shown to clients only.
+ * Picks a featured profile deterministically from the active service. */
+function SponsoredPickCard({ active }: { active: ServiceKey }) {
+  const featured = generateFeatured(active);
+  const post = featured[0];
+  if (!post) return null;
+  return (
+    <Link
+      href={`/post/${encodeURIComponent(post.id)}`}
+      className="group flex items-center gap-2.5 rounded-xl border bg-card p-2.5 transition-colors hover:border-primary/40 hover:bg-primary/5"
+    >
+      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+        <Image
+          src={post.imageUrl}
+          alt={post.name}
+          fill
+          sizes="48px"
+          className="object-cover"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="mb-0.5 flex items-center gap-1">
+          <SponsoredTag variant="subtle" />
+        </div>
+        <p className="flex items-center gap-1 truncate text-xs font-semibold">
+          {post.name}
+          {post.verified && (
+            <BadgeCheck className="h-3 w-3 shrink-0 fill-sky-500 text-white" />
+          )}
+        </p>
+        <p className="truncate text-[10px] text-muted-foreground">
+          {post.location}, {post.city}
+        </p>
+      </div>
+      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </Link>
   );
 }

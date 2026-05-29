@@ -7,6 +7,7 @@ import { BadgeCheck, Crown, Heart, MapPin, PlayCircle, Sparkles, Star } from "lu
 import { Badge } from "@/shared/components/ui/badge";
 import { Card } from "@/shared/components/ui/card";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
+import { SponsoredTag } from "@/features/home/components/ads";
 import { cn } from "@/shared/lib/utils";
 import { formatCOP } from "@/shared/lib/format";
 import type { Post, Tier } from "@/features/posts/data/mock-posts";
@@ -37,9 +38,15 @@ interface PostCardProps {
   post: Post;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  sponsored?: boolean;
 }
 
-export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) {
+export function PostCard({
+  post,
+  isFavorite,
+  onToggleFavorite,
+  sponsored,
+}: PostCardProps) {
   const tier = TIER_STYLES[post.tier];
 
   return (
@@ -75,6 +82,15 @@ export function PostCard({ post, isFavorite, onToggleFavorite }: PostCardProps) 
             <Sparkles className="h-3 w-3" />
             Nuevo
           </Badge>
+        )}
+
+        {sponsored && (
+          <SponsoredTag
+            className={cn(
+              "absolute",
+              post.isNew ? "right-3 top-10" : "right-3 top-3"
+            )}
+          />
         )}
 
         <button

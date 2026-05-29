@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { StoryViewer } from "@/features/stories/components/story-viewer";
+import { SponsoredTag } from "@/features/home/components/ads";
 import { useSession } from "@/features/auth/session";
 import { cn } from "@/shared/lib/utils";
 import type { Post } from "@/features/posts/data/mock-posts";
@@ -64,6 +65,7 @@ export function Stories({ items }: StoriesProps) {
             key={p.id}
             post={p}
             onClick={() => setViewerIndex(i)}
+            sponsored={!isProvider && (i === 0 || i === 4)}
           />
         ))}
       </div>
@@ -78,7 +80,15 @@ export function Stories({ items }: StoriesProps) {
   );
 }
 
-function StoryBubble({ post, onClick }: { post: Post; onClick: () => void }) {
+function StoryBubble({
+  post,
+  onClick,
+  sponsored,
+}: {
+  post: Post;
+  onClick: () => void;
+  sponsored?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -104,6 +114,9 @@ function StoryBubble({ post, onClick }: { post: Post; onClick: () => void }) {
         </span>
         {post.isOnline && (
           <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+        )}
+        {sponsored && (
+          <SponsoredTag className="absolute -top-1 left-1/2 -translate-x-1/2" />
         )}
       </span>
       <span className="w-full truncate text-center text-[11px] text-foreground/80">

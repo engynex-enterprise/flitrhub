@@ -4,10 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import {
   ArrowUpRight,
-  Banknote,
   Check,
   Crown,
-  DollarSign,
   Edit3,
   Eye,
   Gift,
@@ -20,12 +18,9 @@ import {
   Play,
   Plus,
   Sparkles,
-  Star,
   Trash2,
-  TrendingUp,
   Unlock,
   Upload,
-  Users,
 } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
@@ -33,13 +28,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { formatCOP } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
-
-import {
-  BarChartCmp,
-  ChartCard,
-  Kpi,
-  RankedBars,
-} from "./provider-stats";
 
 /* -------------------- Mock data -------------------- */
 
@@ -106,11 +94,6 @@ const ACTIVITY: Activity[] = [
   { id: "a7", kind: "tip", user: "Anónimo", amount: 100_000, ago: "Hace 8 h" },
 ];
 
-const REVENUE_14D = [
-  120_000, 145_000, 180_000, 95_000, 215_000, 268_000, 320_000, 280_000,
-  340_000, 410_000, 380_000, 450_000, 520_000, 480_000,
-];
-
 const ACTIVITY_LABEL: Record<Activity["kind"], { label: string; icon: typeof Crown; tone: string }> = {
   subscribe: { label: "Nueva suscripción", icon: Crown, tone: "text-primary bg-primary/15" },
   renew: { label: "Renovación", icon: Check, tone: "text-emerald-400 bg-emerald-500/15" },
@@ -126,20 +109,6 @@ export function ProviderContent() {
   const [filter, setFilter] = useState<VaultFilter>("all");
 
   const published = VAULT.filter((v) => v.status === "published");
-  const totalSubs = TIERS.reduce((s, t) => s + t.subs, 0);
-  const monthlyMRR = TIERS.reduce(
-    (s, t) => s + (t.price / t.durationMonths) * t.subs,
-    0
-  );
-  const totalEarnings = VAULT.reduce((s, v) => s + v.earnings, 0);
-  const ppvEarnings = VAULT.filter((v) => v.access === "ppv").reduce(
-    (s, v) => s + v.earnings,
-    0
-  );
-  const tipsTotal = ACTIVITY.filter((a) => a.kind === "tip").reduce(
-    (s, a) => s + a.amount,
-    0
-  );
 
   const filtered = VAULT.filter((v) => {
     if (filter === "all") return v.status === "published";
@@ -152,40 +121,6 @@ export function ProviderContent() {
 
   return (
     <div className="space-y-4">
-      {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi
-          label="Ingresos (30d)"
-          value={formatCOP(totalEarnings)}
-          delta="+38%"
-          deltaTone="up"
-          icon={Banknote}
-          tone="text-emerald-400 bg-emerald-500/10"
-        />
-        <Kpi
-          label="MRR estimado"
-          value={formatCOP(Math.round(monthlyMRR))}
-          delta="+12%"
-          deltaTone="up"
-          icon={TrendingUp}
-          tone="text-primary bg-primary/10"
-        />
-        <Kpi
-          label="Suscriptores"
-          value={totalSubs.toLocaleString("es-CO")}
-          delta="+24"
-          deltaTone="up"
-          icon={Users}
-          tone="text-sky-400 bg-sky-500/10"
-        />
-        <Kpi
-          label="Propinas (30d)"
-          value={formatCOP(tipsTotal)}
-          icon={Gift}
-          tone="text-rose-400 bg-rose-500/10"
-        />
-      </div>
-
       {/* Subscription tiers */}
       <section>
         <SectionHeader
@@ -252,45 +187,6 @@ export function ProviderContent() {
           ))}
         </div>
       </section>
-
-      {/* Charts row */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <ChartCard
-          title="Ingresos diarios"
-          subtitle="Últimos 14 días"
-          icon={DollarSign}
-          delta="+38%"
-          deltaTone="up"
-        >
-          <BarChartCmp
-            data={REVENUE_14D.map((v, i) => ({
-              day: String(i + 1),
-              value: v,
-            }))}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title="Top de ingresos por publicación"
-          subtitle="Las que mejor te rinden"
-          icon={Star}
-        >
-          <RankedBars
-            items={[...VAULT]
-              .filter((v) => v.earnings > 0)
-              .sort((a, b) => b.earnings - a.earnings)
-              .slice(0, 5)
-              .map((v) => ({
-                label:
-                  v.type === "video"
-                    ? `Video ${v.duration}`
-                    : "Foto",
-                meta: `${v.unlocks} desbloqueos · ${v.access.toUpperCase()}`,
-                value: Math.round(v.earnings / 1000),
-              }))}
-          />
-        </ChartCard>
-      </div>
 
       {/* Recent activity */}
       <section>

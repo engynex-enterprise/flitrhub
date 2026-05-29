@@ -194,7 +194,11 @@ export function PostFeed({
 
   const isEmpty = !loading && visiblePosts.length === 0 && posts.length > 0;
 
-  const renderPost = (post: Post) => {
+  const renderPost = (post: Post, position: number) => {
+    // Discreet sponsored marker for audience-facing surfaces. Show for
+    // non-providers (clients + not-logged-in) at deterministic positions.
+    const sponsored =
+      !isProvider && (position === 3 || position === 8 || position === 15);
     if (viewMode === "list") {
       return (
         <PostListItem
@@ -209,6 +213,7 @@ export function PostFeed({
         post={post}
         isFavorite={favorites.has(post.id)}
         onToggleFavorite={onToggleFavorite}
+        sponsored={sponsored}
       />
     );
   };
@@ -234,7 +239,7 @@ export function PostFeed({
             const showRowAd = isProvider && position % AD_ROW_EVERY === 0;
             return (
               <Fragment key={post.id}>
-                {renderPost(post)}
+                {renderPost(post, position)}
                 {showInlineAd && <AdInlineCard key={`ad-i-${idx}`} />}
                 {showRowAd && (
                   <div

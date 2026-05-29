@@ -219,6 +219,34 @@ export function PromotedTag({ className }: { className?: string }) {
   );
 }
 
+/* Discreet sponsored marker — for audience-facing placements.
+ * Two variants:
+ *  - "overlay": for use on images/dark backgrounds (default)
+ *  - "subtle":  for use on light surfaces (cards/sidebar) */
+export function SponsoredTag({
+  className,
+  variant = "overlay",
+  label = "Ad",
+}: {
+  className?: string;
+  variant?: "overlay" | "subtle";
+  label?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-sm px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider",
+        variant === "overlay"
+          ? "bg-black/45 text-white/85 backdrop-blur"
+          : "border bg-muted/70 text-muted-foreground",
+        className
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 /* -------------------- Home: top banner -------------------- */
 
 const FEATURED_TOP: AdProductId[] = ["search-top", "destacado", "platino"];

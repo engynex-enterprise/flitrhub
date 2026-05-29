@@ -12,6 +12,7 @@ export {
   AdSimilarSponsoredRow,
   AD_PRODUCT_CATALOG,
   PromotedTag,
+  SponsoredTag,
   getProduct,
 } from "./components/ads";
 export type { AdProductId, AdProductMeta } from "./components/ads";

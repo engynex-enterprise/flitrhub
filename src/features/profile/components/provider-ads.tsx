@@ -31,12 +31,6 @@ import {
 } from "@/features/home/components/ads";
 
 import { AdTargetingDrawer } from "./ad-targeting-drawer";
-import {
-  BarChartCmp,
-  ChartCard,
-  Kpi,
-  RankedBars,
-} from "./provider-stats";
 
 /* -------------------- Mock data -------------------- */
 
@@ -110,18 +104,6 @@ const ACTIVE_CAMPAIGNS: Campaign[] = [
 
 const PRODUCTS: AdProductMeta[] = AD_PRODUCT_CATALOG;
 
-const HISTORY = [
-  { name: "Top búsqueda · abr", days: 14, spent: 168_000, roi: 3.2 },
-  { name: "Destacado home · abr", days: 7, spent: 70_000, roi: 2.4 },
-  { name: "Boost Bogotá · mar", days: 21, spent: 168_000, roi: 1.8 },
-  { name: "Story sponsor · mar", days: 3, spent: 45_000, roi: 2.1 },
-];
-
-const IMPRESSIONS_14D = [
-  1200, 1340, 980, 1620, 2100, 2480, 2210, 1860, 2030, 2540, 2820, 3120, 2960,
-  3340,
-];
-
 const CAMPAIGN_TYPE_META: Record<
   CampaignType,
   { icon: typeof Megaphone; label: string }
@@ -154,41 +136,6 @@ export function ProviderAds() {
   return (
     <div className="space-y-4">
       <WalletCard />
-
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi
-          label="Impresiones (30d)"
-          value="312k"
-          delta="+22%"
-          deltaTone="up"
-          icon={Eye}
-          tone="text-sky-400 bg-sky-500/10"
-        />
-        <Kpi
-          label="Clics"
-          value="18.4k"
-          delta="+15%"
-          deltaTone="up"
-          icon={MousePointerClick}
-          tone="text-primary bg-primary/10"
-        />
-        <Kpi
-          label="Contactos pagos"
-          value="412"
-          delta="+31%"
-          deltaTone="up"
-          icon={Phone}
-          tone="text-emerald-400 bg-emerald-500/10"
-        />
-        <Kpi
-          label="CPC promedio"
-          value="$28"
-          delta="-12%"
-          deltaTone="up"
-          icon={Target}
-          tone="text-gold bg-amber-500/10"
-        />
-      </div>
 
       {/* Active campaigns */}
       <section>
@@ -232,38 +179,6 @@ export function ProviderAds() {
           ))}
         </div>
       </section>
-
-      {/* Historic stats */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <ChartCard
-          title="Impresiones entregadas"
-          subtitle="Últimos 14 días"
-          icon={Eye}
-          delta="+22%"
-          deltaTone="up"
-        >
-          <BarChartCmp
-            data={IMPRESSIONS_14D.map((v, i) => ({
-              day: String(i + 1),
-              value: v,
-            }))}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title="Mejores campañas"
-          subtitle="Por ROI (gasto vs contactos)"
-          icon={TrendingUp}
-        >
-          <RankedBars
-            items={HISTORY.map((h) => ({
-              label: h.name,
-              meta: `${h.days}d · ${formatCOP(h.spent)} gastados`,
-              value: Math.round(h.roi * 100),
-            }))}
-          />
-        </ChartCard>
-      </div>
 
       <AdTargetingDrawer
         open={targetingOpen}

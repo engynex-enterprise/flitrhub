@@ -3,17 +3,23 @@
 import {
   ArrowDownRight,
   ArrowUpRight,
+  Banknote,
   BarChart3,
   Clock,
   Compass,
   Crown,
+  DollarSign,
   Eye,
+  Gift,
   Heart,
   MessageCircle,
+  MousePointerClick,
   Phone,
   Sparkles,
   Star,
+  Target,
   TrendingUp,
+  Users,
 } from "lucide-react";
 
 import { Card } from "@/shared/components/ui/card";
@@ -89,6 +95,33 @@ const FUNNEL = [
   { label: "Favoritos", value: 843, icon: Heart },
   { label: "Chats", value: 312, icon: MessageCircle },
   { label: "Contactos", value: 127, icon: Phone },
+];
+
+// Vault income — moved here from provider-content.tsx
+const VAULT_REVENUE_14D = [
+  120_000, 145_000, 180_000, 95_000, 215_000, 268_000, 320_000, 280_000,
+  340_000, 410_000, 380_000, 450_000, 520_000, 480_000,
+];
+
+const VAULT_TOP_EARNERS = [
+  { label: "Video · 5:12", meta: "78 desbloqueos · PPV", value: 3510 },
+  { label: "Foto exclusiva", meta: "142 desbloqueos · Sub", value: 4260 },
+  { label: "Foto serie", meta: "98 desbloqueos · Sub", value: 2940 },
+  { label: "Video · 2:34", meta: "86 desbloqueos · PPV", value: 2150 },
+  { label: "Foto premium", meta: "32 desbloqueos · Sub", value: 960 },
+];
+
+// Ads performance — moved here from provider-ads.tsx
+const ADS_IMPRESSIONS_14D = [
+  1200, 1340, 980, 1620, 2100, 2480, 2210, 1860, 2030, 2540, 2820, 3120, 2960,
+  3340,
+];
+
+const ADS_BEST_CAMPAIGNS = [
+  { label: "Top búsqueda · abr", meta: "14d · $168k gastados", value: 320 },
+  { label: "Destacado home · abr", meta: "7d · $70k gastados", value: 240 },
+  { label: "Story sponsor · mar", meta: "3d · $45k gastados", value: 210 },
+  { label: "Boost Bogotá · mar", meta: "21d · $168k gastados", value: 180 },
 ];
 
 /* -------------------- Public component -------------------- */
@@ -226,6 +259,196 @@ export function ProviderStats() {
           <RatingsBars data={RATINGS_DIST} />
         </ChartCard>
       </div>
+
+      {/* -------------------- Vault income -------------------- */}
+      <SectionDivider
+        title="Ingresos del vault"
+        subtitle="Suscripciones, pay-per-view y propinas"
+      />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Kpi
+          label="Ingresos (30d)"
+          value="$13.8M"
+          delta="+38%"
+          deltaTone="up"
+          icon={Banknote}
+          tone="text-emerald-400 bg-emerald-500/10"
+        />
+        <Kpi
+          label="MRR estimado"
+          value="$5.6M"
+          delta="+12%"
+          deltaTone="up"
+          icon={TrendingUp}
+          tone="text-primary bg-primary/10"
+        />
+        <Kpi
+          label="Suscriptores"
+          value="223"
+          delta="+24"
+          deltaTone="up"
+          icon={Users}
+          tone="text-sky-400 bg-sky-500/10"
+        />
+        <Kpi
+          label="Propinas (30d)"
+          value="$150k"
+          icon={Gift}
+          tone="text-rose-400 bg-rose-500/10"
+        />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <ChartCard
+          title="Ingresos diarios del vault"
+          subtitle="Últimos 14 días"
+          icon={DollarSign}
+          delta="+38%"
+          deltaTone="up"
+        >
+          <BarChartCmp
+            data={VAULT_REVENUE_14D.map((v, i) => ({
+              day: String(i + 1),
+              value: v,
+            }))}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Top de ingresos por contenido"
+          subtitle="Las publicaciones que mejor rinden"
+          icon={Star}
+        >
+          <RankedBars items={VAULT_TOP_EARNERS} />
+        </ChartCard>
+      </div>
+
+      {/* -------------------- Ads performance -------------------- */}
+      <SectionDivider
+        title="Desempeño de promociones"
+        subtitle="Campañas pagas: impresiones, CTR y conversión"
+      />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Kpi
+          label="Impresiones (30d)"
+          value="312k"
+          delta="+22%"
+          deltaTone="up"
+          icon={Eye}
+          tone="text-sky-400 bg-sky-500/10"
+        />
+        <Kpi
+          label="Clics"
+          value="18.4k"
+          delta="+15%"
+          deltaTone="up"
+          icon={MousePointerClick}
+          tone="text-primary bg-primary/10"
+        />
+        <Kpi
+          label="Contactos pagos"
+          value="412"
+          delta="+31%"
+          deltaTone="up"
+          icon={Phone}
+          tone="text-emerald-400 bg-emerald-500/10"
+        />
+        <Kpi
+          label="CPC promedio"
+          value="$28"
+          delta="-12%"
+          deltaTone="up"
+          icon={Target}
+          tone="text-gold bg-amber-500/10"
+        />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <ChartCard
+          title="Impresiones entregadas"
+          subtitle="Últimos 14 días"
+          icon={Eye}
+          delta="+22%"
+          deltaTone="up"
+        >
+          <BarChartCmp
+            data={ADS_IMPRESSIONS_14D.map((v, i) => ({
+              day: String(i + 1),
+              value: v,
+            }))}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Mejores campañas"
+          subtitle="Por ROI (gasto vs contactos)"
+          icon={TrendingUp}
+        >
+          <RankedBars items={ADS_BEST_CAMPAIGNS} />
+        </ChartCard>
+      </div>
+
+      {/* -------------------- Reviews KPIs -------------------- */}
+      <SectionDivider
+        title="Reseñas"
+        subtitle="Calidad de tu reputación pública"
+      />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Kpi
+          label="Total reseñas"
+          value="128"
+          delta="+8"
+          deltaTone="up"
+          icon={MessageCircle}
+          tone="text-primary bg-primary/10"
+        />
+        <Kpi
+          label="Respondidas"
+          value="83%"
+          delta="+5%"
+          deltaTone="up"
+          icon={ArrowUpRight}
+          tone="text-emerald-400 bg-emerald-500/10"
+        />
+        <Kpi
+          label="Útiles totales"
+          value="402"
+          icon={Heart}
+          tone="text-rose-400 bg-rose-500/10"
+        />
+        <Kpi
+          label="Rating promedio"
+          value="4.8"
+          delta="+0.2"
+          deltaTone="up"
+          icon={Star}
+          tone="text-gold bg-amber-500/10"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Section divider -------------------- */
+
+function SectionDivider({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="border-t pt-4">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+        {title}
+      </h3>
+      {subtitle && (
+        <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+      )}
     </div>
   );
 }

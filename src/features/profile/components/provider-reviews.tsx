@@ -4,12 +4,10 @@ import { useMemo, useState } from "react";
 import {
   CheckCircle2,
   Filter,
-  MessageCircle,
   MoreHorizontal,
   Reply,
   Star,
   ThumbsUp,
-  TrendingUp,
 } from "lucide-react";
 
 import {
@@ -156,90 +154,8 @@ export function ProviderReviews() {
     });
   }, [filter, sort]);
 
-  const total = REVIEWS.length;
-  const avg = REVIEWS.reduce((s, r) => s + r.rating, 0) / total;
-  const dist = [5, 4, 3, 2, 1].map((stars) => ({
-    stars,
-    count: REVIEWS.filter((r) => r.rating === stars).length,
-  }));
-  const unreplied = REVIEWS.filter((r) => !r.reply).length;
-  const responseRate = Math.round(
-    ((total - unreplied) / total) * 100
-  );
-
   return (
     <div className="space-y-4">
-      {/* Summary header */}
-      <Card className="overflow-hidden p-0">
-        <div className="grid gap-0 md:grid-cols-[260px_minmax(0,1fr)]">
-          {/* Big rating */}
-          <div className="bg-gradient-sensual relative flex flex-col items-center justify-center gap-1 overflow-hidden p-6 text-white">
-            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/30 blur-3xl" />
-            <div className="relative">
-              <p className="text-5xl font-bold leading-none">
-                {avg.toFixed(1)}
-              </p>
-              <div className="mt-2 flex justify-center">
-                <StarRow rating={avg} />
-              </div>
-              <p className="mt-1.5 text-center text-xs text-white/80">
-                Basado en {total} reseñas
-              </p>
-            </div>
-          </div>
-
-          {/* Distribution + meta */}
-          <div className="space-y-3 p-5">
-            <div className="space-y-1.5">
-              {dist.map((d) => {
-                const pct = (d.count / total) * 100;
-                return (
-                  <div
-                    key={d.stars}
-                    className="flex items-center gap-2 text-xs"
-                  >
-                    <span className="flex w-10 shrink-0 items-center gap-0.5 font-semibold">
-                      {d.stars}
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    </span>
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-300"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
-                      {d.count}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 border-t pt-3">
-              <SummaryStat
-                icon={TrendingUp}
-                label="Respondidas"
-                value={`${responseRate}%`}
-                tone="text-emerald-400"
-              />
-              <SummaryStat
-                icon={MessageCircle}
-                label="Pendientes"
-                value={String(unreplied)}
-                tone="text-primary"
-              />
-              <SummaryStat
-                icon={ThumbsUp}
-                label="Útiles"
-                value={String(REVIEWS.reduce((s, r) => s + r.helpful, 0))}
-                tone="text-sky-400"
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* Filters + sort */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -484,30 +400,6 @@ function StarRow({
           />
         );
       })}
-    </div>
-  );
-}
-
-function SummaryStat({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof Star;
-  label: string;
-  value: string;
-  tone: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-1">
-        <Icon className={cn("h-3 w-3", tone)} />
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-      </div>
-      <p className="mt-0.5 text-base font-bold tabular-nums">{value}</p>
     </div>
   );
 }

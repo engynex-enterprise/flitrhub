@@ -8,6 +8,7 @@ import { BadgeCheck, ChevronLeft, ChevronRight, Crown, Flame } from "lucide-reac
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
+import { SponsoredTag } from "@/features/home/components/ads";
 import { cn } from "@/shared/lib/utils";
 import { formatCOP } from "@/shared/lib/format";
 import type { Post } from "@/features/posts/data/mock-posts";
@@ -63,15 +64,25 @@ export function Destacados({ posts }: DestacadosProps) {
         ref={scrollerRef}
         className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2"
       >
-        {posts.map((post) => (
-          <FeaturedCard key={post.id} post={post} />
+        {posts.map((post, idx) => (
+          <FeaturedCard
+            key={post.id}
+            post={post}
+            sponsored={idx === 0 || idx === 2}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function FeaturedCard({ post }: { post: Post }) {
+function FeaturedCard({
+  post,
+  sponsored,
+}: {
+  post: Post;
+  sponsored?: boolean;
+}) {
   return (
     <Card
       className={cn(
@@ -97,6 +108,7 @@ function FeaturedCard({ post }: { post: Post }) {
           <Crown className="h-3 w-3" />
           Destacado
         </div>
+        {sponsored && <SponsoredTag className="absolute right-2 top-2" />}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-3 text-white">
           <div className="flex items-center gap-1">
             <p className="truncate text-sm font-semibold">{post.name}</p>

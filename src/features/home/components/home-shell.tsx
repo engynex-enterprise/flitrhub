@@ -13,6 +13,7 @@ import { Destacados } from "@/features/posts/components/destacados";
 import { Recomendados } from "@/features/posts/components/recomendados";
 import { QuickActions } from "@/features/home/components/quick-actions";
 import { AdBanner } from "@/features/home/components/ads";
+import { WelcomeAdModal } from "@/features/home/components/welcome-ad-modal";
 import { PostFeed } from "@/features/posts/components/post-feed";
 import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
@@ -163,7 +164,12 @@ export function HomeShell() {
         onCreatePost={() => setCreateOpen(true)}
       />
 
-      <Sidebar active={active} onSelect={setActive} showAds={isProvider} />
+      <Sidebar
+        active={active}
+        onSelect={setActive}
+        showAds={isProvider}
+        showSponsoredPick={!isProvider}
+      />
 
       <main
         className={cn(
@@ -252,6 +258,8 @@ export function HomeShell() {
         onSave={savePrefs}
         onClear={clearPrefs}
       />
+
+      <WelcomeAdModal />
     </div>
   );
 }

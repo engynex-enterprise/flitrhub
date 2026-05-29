@@ -13,6 +13,7 @@ import {
   Info,
   Mail,
   MapPin,
+  Megaphone,
   MessageCircle,
   MessageSquare,
   Pencil,
@@ -37,6 +38,8 @@ import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { LoginDialog } from "@/features/auth/components/login-dialog";
 import { EditProfileDialog } from "@/features/profile/components/edit-profile-dialog";
+import { ProviderAds } from "@/features/profile/components/provider-ads";
+import { ProviderPostStats } from "@/features/profile/components/provider-post-stats";
 import { ProviderStats } from "@/features/profile/components/provider-stats";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
@@ -51,6 +54,8 @@ import { cn } from "@/shared/lib/utils";
 type TabId =
   | "overview"
   | "posts"
+  | "metrics"
+  | "ads"
   | "reviews"
   | "favorites"
   | "chats"
@@ -98,6 +103,8 @@ export function AccountProfile() {
     ? [
         { id: "overview", label: "Resumen", icon: BarChart3 },
         { id: "posts", label: "Publicaciones", icon: Sparkles },
+        { id: "metrics", label: "Estadísticas", icon: TrendingUp },
+        { id: "ads", label: "Promociones", icon: Megaphone },
         { id: "reviews", label: "Reseñas", icon: Star },
       ]
     : [
@@ -176,6 +183,24 @@ export function AccountProfile() {
                 }
               >
                 <MyPosts onCreate={() => setCreateOpen(true)} />
+              </TabPanel>
+            )}
+
+            {tab === "metrics" && (
+              <TabPanel
+                title="Estadísticas por publicación"
+                subtitle="Descubre cuál anuncio te está rindiendo mejor"
+              >
+                <ProviderPostStats />
+              </TabPanel>
+            )}
+
+            {tab === "ads" && (
+              <TabPanel
+                title="Promociones y campañas"
+                subtitle="Compra ads, mejora posicionamiento y mide tu ROI"
+              >
+                <ProviderAds />
               </TabPanel>
             )}
 

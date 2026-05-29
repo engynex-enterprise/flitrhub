@@ -232,7 +232,7 @@ export function ProviderStats() {
 
 /* -------------------- KPI card -------------------- */
 
-function Kpi({
+export function Kpi({
   label,
   value,
   delta,
@@ -284,7 +284,7 @@ function Kpi({
 
 /* -------------------- Chart card wrapper -------------------- */
 
-function ChartCard({
+export function ChartCard({
   title,
   subtitle,
   icon: Icon,
@@ -410,7 +410,11 @@ function AreaChart({ data }: { data: { day: string; value: number }[] }) {
 
 /* -------------------- Bar chart -------------------- */
 
-function BarChartCmp({ data }: { data: { day: string; value: number }[] }) {
+export function BarChartCmp({
+  data,
+}: {
+  data: { day: string; value: number }[];
+}) {
   const max = Math.max(...data.map((d) => d.value));
   return (
     <div className="space-y-2">
@@ -446,7 +450,7 @@ function BarChartCmp({ data }: { data: { day: string; value: number }[] }) {
 
 /* -------------------- Ranked horizontal bars -------------------- */
 
-function RankedBars({
+export function RankedBars({
   items,
 }: {
   items: { label: string; meta?: string; value: number }[];
@@ -651,6 +655,55 @@ function Funnel({
         );
       })}
     </div>
+  );
+}
+
+/* -------------------- Sparkline (small inline trend) -------------------- */
+
+export function Sparkline({
+  data,
+  tone = "primary",
+}: {
+  data: number[];
+  tone?: "primary" | "emerald" | "rose";
+}) {
+  const W = 100;
+  const H = 28;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const stepX = data.length > 1 ? W / (data.length - 1) : 0;
+  const pts = data.map((v, i) => ({
+    x: i * stepX,
+    y: H - ((v - min) / range) * (H - 4) - 2,
+  }));
+  const linePath = pts
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+    .join(" ");
+  const areaPath = `${linePath} L ${pts[pts.length - 1].x} ${H} L 0 ${H} Z`;
+  const stroke =
+    tone === "emerald"
+      ? "rgb(52, 211, 153)"
+      : tone === "rose"
+        ? "rgb(251, 113, 133)"
+        : "hsl(var(--primary))";
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      className="h-7 w-full"
+    >
+      <path d={areaPath} fill={stroke} fillOpacity="0.12" />
+      <path
+        d={linePath}
+        fill="none"
+        stroke={stroke}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

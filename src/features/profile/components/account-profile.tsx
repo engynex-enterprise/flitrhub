@@ -37,6 +37,7 @@ import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { LoginDialog } from "@/features/auth/components/login-dialog";
 import { EditProfileDialog } from "@/features/profile/components/edit-profile-dialog";
+import { ProviderStats } from "@/features/profile/components/provider-stats";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
 import { useSession, type SessionUser, type UserRole } from "@/features/auth/session";
@@ -841,30 +842,6 @@ function OverviewSection({
 }
 
 /* -------------------- Provider sections -------------------- */
-
-function ProviderStats() {
-  const items = [
-    { label: "Perfil con más visitas", value: "Sofía · 4.2k", trend: "+18%" },
-    { label: "Mejor rating", value: "Valentina · 4.9 ★", trend: "+0.2" },
-    { label: "Conversión chats", value: "31%", trend: "+5%" },
-    { label: "Tiempo respuesta", value: "8 min", trend: "-2 min" },
-  ];
-  return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {items.map((s) => (
-        <Card key={s.label} className="p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
-              {s.trend}
-            </span>
-          </div>
-          <p className="mt-1 text-lg font-bold">{s.value}</p>
-        </Card>
-      ))}
-    </div>
-  );
-}
 
 function ProviderReviews() {
   const reviews = [

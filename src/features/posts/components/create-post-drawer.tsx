@@ -7,7 +7,9 @@ import {
   CheckCircle2,
   ImagePlus,
   LogIn,
+  Megaphone,
   Sparkles,
+  TrendingUp,
   Upload,
 } from "lucide-react";
 
@@ -28,6 +30,12 @@ import { SimpleSelect } from "@/shared/components/ui/simple-select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import { CITIES } from "@/shared/lib/cities";
+import { formatCOP } from "@/shared/lib/format";
+import {
+  AD_PRODUCT_CATALOG,
+  type AdProductId,
+  type AdProductMeta,
+} from "@/features/home/components/ads";
 import { services, type ServiceKey } from "@/features/posts/data/services";
 import {
   BODY_TYPE_OPTIONS,
@@ -118,7 +126,7 @@ const EMPTY_DRAFT: PostDraft = {
   groupCapacity: "",
 };
 
-type Step = "service" | "form";
+type Step = "service" | "form" | "promote";
 
 export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) {
   const { user, isLoggedIn, login } = useSession();
@@ -126,12 +134,14 @@ export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) 
   const [step, setStep] = useState<Step>("service");
   const [draft, setDraft] = useState<PostDraft>(EMPTY_DRAFT);
   const [submitted, setSubmitted] = useState(false);
+  const [promoProduct, setPromoProduct] = useState<AdProductId | null>(null);
 
   // Reset when opening; prefill basics from session.
   useEffect(() => {
     if (!open) return;
     setStep("service");
     setSubmitted(false);
+    setPromoProduct(null);
     setDraft((d) => ({
       ...d,
       service: null,
@@ -163,8 +173,12 @@ export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) 
     setStep("form");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAdvanceToPromote = (e: React.FormEvent) => {
     e.preventDefault();
+    setStep("promote");
+  };
+
+  const handlePublish = () => {
     setSubmitted(true);
   };
 
@@ -173,6 +187,7 @@ export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) 
       <SheetContent side="right" className="flex flex-col p-0">
         {submitted ? (
           <SuccessState
+            promoProduct={promoProduct}
             onClose={() => {
               onOpenChange(false);
             }}
@@ -186,15 +201,26 @@ export function CreatePostDrawer({ open, onOpenChange }: CreatePostDrawerProps) 
             userEmail={user?.email}
             onCancel={() => onOpenChange(false)}
           />
-        ) : (
+        ) : step === "form" ? (
           <FormStep
             draft={draft}
             update={update}
             onBack={() => setStep("service")}
             onCancel={() => onOpenChange(false)}
-            onSubmit={handleSubmit}
+            onSubmit={handleAdvanceToPromote}
             isLoggedIn={isLoggedIn}
             userEmail={user?.email}
+          />
+        ) : (
+          <PromoteStep
+            selected={promoProduct}
+            onSelect={setPromoProduct}
+            onBack={() => setStep("form")}
+            onSkip={() => {
+              setPromoProduct(null);
+              handlePublish();
+            }}
+            onPublish={handlePublish}
           />
         )}
       </SheetContent>
@@ -227,7 +253,7 @@ function ServiceStep({
           Crear publicación
         </SheetTitle>
         <SheetDescription>
-          Paso 1 de 2 — ¿Qué tipo de servicio vas a publicar?
+          Paso 1 de 3 — ¿Qué tipo de servicio vas a publicar?
         </SheetDescription>
       </SheetHeader>
 
@@ -324,7 +350,7 @@ function FormStep({
           <Sparkles className="h-5 w-5 text-primary" />
           Crear publicación
         </SheetTitle>
-        <SheetDescription>Paso 2 de 2 — Detalles del perfil</SheetDescription>
+        <SheetDescription>Paso 2 de 3 — Detalles del perfil</SheetDescription>
       </SheetHeader>
 
       {/* Selected service indicator */}
@@ -695,7 +721,7 @@ function FormStep({
             Cancelar
           </Button>
           <Button type="submit" variant="brand">
-            Publicar perfil
+            Continuar
           </Button>
         </SheetFooter>
       </form>
@@ -775,7 +801,16 @@ function ChipsRow({
   );
 }
 
-function SuccessState({ onClose }: { onClose: () => void }) {
+function SuccessState({
+  promoProduct,
+  onClose,
+}: {
+  promoProduct: AdProductId | null;
+  onClose: () => void;
+}) {
+  const promo = promoProduct
+    ? AD_PRODUCT_CATALOG.find((p) => p.id === promoProduct)
+    : null;
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
@@ -786,9 +821,210 @@ function SuccessState({ onClose }: { onClose: () => void }) {
         Tu perfil está en revisión. Te notificaremos cuando esté visible en la
         plataforma.
       </p>
+      {promo && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+          <Megaphone className="h-3.5 w-3.5 text-primary" />
+          <span>
+            Promoción activada:{" "}
+            <span className="font-bold text-primary">{promo.name}</span>
+          </span>
+        </div>
+      )}
       <Button variant="brand" className="mt-6" onClick={onClose}>
         Volver
       </Button>
     </div>
+  );
+}
+
+/* -------------------- Step 3: promote (optional) -------------------- */
+
+const PROMO_PICK_IDS: AdProductId[] = [
+  "search-top",
+  "destacado",
+  "re-impulso",
+  "city-boost",
+];
+
+function PromoteStep({
+  selected,
+  onSelect,
+  onBack,
+  onSkip,
+  onPublish,
+}: {
+  selected: AdProductId | null;
+  onSelect: (id: AdProductId | null) => void;
+  onBack: () => void;
+  onSkip: () => void;
+  onPublish: () => void;
+}) {
+  const products = PROMO_PICK_IDS.map(
+    (id) => AD_PRODUCT_CATALOG.find((p) => p.id === id)!
+  );
+
+  return (
+    <>
+      <SheetHeader>
+        <SheetTitle className="flex items-center gap-2">
+          <Megaphone className="h-5 w-5 text-primary" />
+          Promociona tu publicación
+        </SheetTitle>
+        <SheetDescription>
+          Paso 3 de 3 — Opcional · puedes omitir este paso y publicar sin
+          promoción.
+        </SheetDescription>
+      </SheetHeader>
+
+      <SheetBody>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Da un empujón inicial a tu publicación para que llegue a más
+            personas desde el primer día.
+          </p>
+
+          {/* "Sin promoción" option */}
+          <PromoOption
+            active={selected === null}
+            onClick={() => onSelect(null)}
+            title="Sin promoción"
+            description="Publica solo en orgánico. Podrás activar promociones más adelante desde el tab Monetización."
+            footer="Gratis"
+          />
+
+          {/* Product picks */}
+          {products.map((p) => (
+            <PromoProductOption
+              key={p.id}
+              product={p}
+              active={selected === p.id}
+              onClick={() => onSelect(p.id)}
+            />
+          ))}
+
+          <p className="pt-1 text-[11px] text-muted-foreground">
+            Más opciones y segmentación avanzada en el tab Monetización después
+            de publicar.
+          </p>
+        </div>
+      </SheetBody>
+
+      <SheetFooter>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onBack}
+          className="sm:mr-auto"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Atrás
+        </Button>
+        <Button type="button" variant="ghost" onClick={onSkip}>
+          Omitir
+        </Button>
+        <Button type="button" variant="brand" onClick={onPublish}>
+          Publicar
+        </Button>
+      </SheetFooter>
+    </>
+  );
+}
+
+function PromoOption({
+  active,
+  onClick,
+  title,
+  description,
+  footer,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  description: string;
+  footer: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+        active
+          ? "border-primary bg-primary/10"
+          : "border-border hover:bg-accent"
+      )}
+    >
+      <span
+        className={cn(
+          "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+          active ? "border-primary bg-primary" : "border-border"
+        )}
+      >
+        {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{title}</p>
+        <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+        {footer}
+      </span>
+    </button>
+  );
+}
+
+function PromoProductOption({
+  product,
+  active,
+  onClick,
+}: {
+  product: AdProductMeta;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const Icon = product.icon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+        active
+          ? "border-primary bg-primary/10"
+          : "border-border hover:bg-accent"
+      )}
+    >
+      <span
+        className={cn(
+          "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+          active ? "border-primary bg-primary" : "border-border"
+        )}
+      >
+        {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+      </span>
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{product.name}</p>
+        <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+          {product.description}
+        </p>
+        <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+          <TrendingUp className="h-2.5 w-2.5" />
+          {product.estReach}
+        </p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className="text-sm font-bold leading-none">
+          {formatCOP(product.price)}
+        </p>
+        <p className="mt-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
+          {product.durationDays === 1
+            ? "/día"
+            : `/${product.durationDays} días`}
+        </p>
+      </div>
+    </button>
   );
 }

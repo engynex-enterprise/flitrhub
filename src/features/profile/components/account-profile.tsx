@@ -15,7 +15,6 @@ import {
   Mail,
   MapPin,
   Megaphone,
-  MessageCircle,
   MessageSquare,
   Pencil,
   Phone,
@@ -73,6 +72,7 @@ export function AccountProfile() {
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("overview");
+  const [statsView, setStatsView] = useState<"general" | "posts">("general");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
@@ -150,8 +150,6 @@ export function AccountProfile() {
           <ProfileSidebar
             user={user}
             isProvider={isProvider}
-            favoritesCount={favorites.size}
-            chatsCount={chats.length}
             onSwitchRole={switchRole}
           />
 
@@ -160,10 +158,6 @@ export function AccountProfile() {
               <OverviewTab
                 user={user}
                 isProvider={isProvider}
-                chatsCount={chats.length}
-                favoritesCount={favorites.size}
-                onCreate={() => setCreateOpen(true)}
-                onOpenPrefs={() => setPrefsOpen(true)}
                 onGoTab={setTab}
               />
             )}
@@ -199,10 +193,34 @@ export function AccountProfile() {
 
             {tab === "metrics" && (
               <TabPanel
-                title="Estadísticas por publicación"
-                subtitle="Descubre cuál anuncio te está rindiendo mejor"
+                title="Estadísticas"
+                subtitle={
+                  statsView === "general"
+                    ? "Desempeño general de tu cuenta"
+                    : "Descubre cuál publicación rinde mejor"
+                }
+                action={
+                  <div className="flex gap-1.5">
+                    <SubPill
+                      active={statsView === "general"}
+                      onClick={() => setStatsView("general")}
+                    >
+                      General
+                    </SubPill>
+                    <SubPill
+                      active={statsView === "posts"}
+                      onClick={() => setStatsView("posts")}
+                    >
+                      Por publicación
+                    </SubPill>
+                  </div>
+                }
               >
-                <ProviderPostStats />
+                {statsView === "general" ? (
+                  <ProviderStats />
+                ) : (
+                  <ProviderPostStats />
+                )}
               </TabPanel>
             )}
 
@@ -513,14 +531,10 @@ function ProfileTabs({
 function ProfileSidebar({
   user,
   isProvider,
-  favoritesCount,
-  chatsCount,
   onSwitchRole,
 }: {
   user: SessionUser;
   isProvider: boolean;
-  favoritesCount: number;
-  chatsCount: number;
   onSwitchRole: () => void;
 }) {
   return (
@@ -534,44 +548,6 @@ function ProfileSidebar({
           <InfoRow icon={Mail} label="Correo" value={user.email} />
           <InfoRow icon={Phone} label="Teléfono" value={user.phone} />
           <InfoRow icon={MapPin} label="Ciudad" value={user.city} />
-        </div>
-      </Card>
-
-      <Card className="p-5">
-        <h3 className="text-sm font-bold">
-          {isProvider ? "Tu actividad" : "Tu cuenta"}
-        </h3>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {isProvider ? (
-            <>
-              <MiniStat icon={Eye} label="Visitas" value="12.4k" tone="text-sky-400" />
-              <MiniStat icon={Heart} label="Favs" value="843" tone="text-rose-400" />
-              <MiniStat
-                icon={MessageCircle}
-                label="Contactos"
-                value="127"
-                tone="text-primary"
-              />
-              <MiniStat icon={Star} label="Rating" value="4.8" tone="text-gold" />
-            </>
-          ) : (
-            <>
-              <MiniStat icon={Eye} label="Visitados" value="47" tone="text-sky-400" />
-              <MiniStat
-                icon={Heart}
-                label="Favoritos"
-                value={String(favoritesCount)}
-                tone="text-rose-400"
-              />
-              <MiniStat
-                icon={MessageCircle}
-                label="Chats"
-                value={String(chatsCount)}
-                tone="text-primary"
-              />
-              <MiniStat icon={Star} label="Reseñas" value="12" tone="text-gold" />
-            </>
-          )}
         </div>
       </Card>
 
@@ -622,30 +598,6 @@ function InfoRow({
   );
 }
 
-function MiniStat({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof Eye;
-  label: string;
-  value: string;
-  tone: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-background p-2.5">
-      <div className="flex items-center gap-1.5">
-        <Icon className={cn("h-3.5 w-3.5", tone)} />
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-      </div>
-      <p className="mt-1 text-base font-bold">{value}</p>
-    </div>
-  );
-}
-
 /* -------------------- Tab panel -------------------- */
 
 function TabPanel({
@@ -684,190 +636,171 @@ function TabPanel({
   );
 }
 
-/* -------------------- Overview -------------------- */
+/* -------------------- Overview (welcome + quick links) -------------------- */
 
 function OverviewTab({
   user,
   isProvider,
-  chatsCount,
-  favoritesCount,
-  onCreate,
-  onOpenPrefs,
   onGoTab,
 }: {
   user: SessionUser;
   isProvider: boolean;
-  chatsCount: number;
-  favoritesCount: number;
-  onCreate: () => void;
-  onOpenPrefs: () => void;
   onGoTab: (t: TabId) => void;
 }) {
+  const providerLinks: QuickLink[] = [
+    {
+      id: "posts",
+      title: "Publicaciones",
+      description: "Crea y administra los perfiles que tienes activos.",
+      icon: Sparkles,
+    },
+    {
+      id: "content",
+      title: "Contenido exclusivo",
+      description: "Tiers de suscripción, vault privado y monetización.",
+      icon: Heart,
+    },
+    {
+      id: "metrics",
+      title: "Estadísticas",
+      description: "Desempeño general y métricas por publicación.",
+      icon: BarChart3,
+    },
+    {
+      id: "ads",
+      title: "Promociones",
+      description: "Compra ads, crea campañas y mide tu ROI.",
+      icon: Target,
+    },
+    {
+      id: "reviews",
+      title: "Reseñas",
+      description: "Lee y responde a lo que opinan tus clientes.",
+      icon: Star,
+    },
+  ];
+
+  const clientLinks: QuickLink[] = [
+    {
+      id: "favorites",
+      title: "Favoritos",
+      description: "Perfiles que guardaste para volver más tarde.",
+      icon: Heart,
+    },
+    {
+      id: "chats",
+      title: "Conversaciones",
+      description: "Continúa los chats donde los dejaste.",
+      icon: MessageSquare,
+    },
+    {
+      id: "preferences",
+      title: "Preferencias",
+      description: "Filtros guardados para mejores recomendaciones.",
+      icon: Target,
+    },
+  ];
+
+  const links = isProvider ? providerLinks : clientLinks;
+
   return (
     <div className="mt-6 space-y-6">
-      <StatsRow
-        stats={
-          isProvider
-            ? [
-                {
-                  label: "Visitas a tus perfiles",
-                  value: "12.4k",
-                  icon: Eye,
-                  tone: "text-sky-400 bg-sky-500/10",
-                },
-                {
-                  label: "Favoritos recibidos",
-                  value: "843",
-                  icon: Heart,
-                  tone: "text-rose-400 bg-rose-500/10",
-                },
-                {
-                  label: "Contactos esta semana",
-                  value: "127",
-                  icon: MessageCircle,
-                  tone: "text-primary bg-primary/10",
-                },
-                {
-                  label: "Rating promedio",
-                  value: "4.8",
-                  icon: Star,
-                  tone: "text-gold bg-amber-500/10",
-                },
-              ]
-            : [
-                {
-                  label: "Perfiles visitados",
-                  value: "47",
-                  icon: Eye,
-                  tone: "text-sky-400 bg-sky-500/10",
-                },
-                {
-                  label: "Favoritos guardados",
-                  value: String(favoritesCount),
-                  icon: Heart,
-                  tone: "text-rose-400 bg-rose-500/10",
-                },
-                {
-                  label: "Chats activos",
-                  value: String(chatsCount),
-                  icon: MessageCircle,
-                  tone: "text-primary bg-primary/10",
-                },
-                {
-                  label: "Reseñas dadas",
-                  value: "12",
-                  icon: Star,
-                  tone: "text-gold bg-amber-500/10",
-                },
-              ]
-        }
-      />
+      {/* Welcome hero */}
+      <Card className="bg-gradient-sensual relative overflow-hidden border-primary/30 p-6">
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/30 blur-3xl" />
+        <div className="absolute -left-16 -bottom-12 h-48 w-48 rounded-full bg-gold/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gold">
+              {isProvider ? "Cuenta anunciante" : "Cuenta cliente"}
+            </p>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+              Hola, {user.name.split(" ")[0]} 👋
+            </h2>
+            <p className="mt-1 text-sm text-white/75">
+              {isProvider
+                ? "Aquí gestionas tus publicaciones, contenido, ads y métricas. Cada sección está en su tab."
+                : "Aquí encuentras tus favoritos, conversaciones y preferencias guardadas."}
+            </p>
+          </div>
+        </div>
+      </Card>
 
-      {isProvider ? (
-        <>
-          <OverviewSection
-            title="Estadísticas"
-            subtitle="Cómo se desempeñan tus publicaciones esta semana"
-            icon={BarChart3}
-          >
-            <ProviderStats />
-          </OverviewSection>
-
-          <OverviewSection
-            title="Publicaciones recientes"
-            icon={Sparkles}
-            onSeeAll={() => onGoTab("posts")}
-            action={
-              <Button
-                variant="brand"
-                size="sm"
-                onClick={onCreate}
-                className="gap-1.5"
-              >
-                <Plus className="h-4 w-4" />
-                Nueva publicación
-              </Button>
-            }
-          >
-            <MyPosts onCreate={onCreate} />
-          </OverviewSection>
-        </>
-      ) : (
-        <>
-          <OverviewSection
-            title="Continúa tus chats"
-            icon={MessageSquare}
-            onSeeAll={() => onGoTab("chats")}
-          >
-            <RecentChats />
-          </OverviewSection>
-
-          <OverviewSection
-            title="Tus preferencias"
-            icon={Target}
-            action={
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onOpenPrefs}
-                className="gap-1.5"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Editar
-              </Button>
-            }
-          >
-            <PreferencesSummary hasPrefs={false} onConfigure={onOpenPrefs} />
-          </OverviewSection>
-        </>
-      )}
+      {/* Quick links */}
+      <section>
+        <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          Acceso rápido
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {links.map((l) => (
+            <QuickLinkCard
+              key={l.id}
+              link={l}
+              onClick={() => onGoTab(l.id)}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
 
-function OverviewSection({
-  title,
-  subtitle,
-  icon: Icon,
-  action,
-  onSeeAll,
-  children,
-}: {
+interface QuickLink {
+  id: TabId;
   title: string;
-  subtitle?: string;
+  description: string;
   icon: typeof Eye;
-  action?: React.ReactNode;
-  onSeeAll?: () => void;
+}
+
+function QuickLinkCard({
+  link,
+  onClick,
+}: {
+  link: QuickLink;
+  onClick: () => void;
+}) {
+  const Icon = link.icon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{link.title}</p>
+        <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+          {link.description}
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function SubPill({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
   children: React.ReactNode;
+  onClick: () => void;
 }) {
   return (
-    <section>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="flex items-center gap-2 text-base font-bold tracking-tight">
-            <Icon className="h-4 w-4 text-primary" />
-            {title}
-          </h3>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {action}
-          {onSeeAll && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onSeeAll}
-              className="text-xs"
-            >
-              Ver todo
-            </Button>
-          )}
-        </div>
-      </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+        active
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border text-muted-foreground hover:bg-accent"
+      )}
+    >
       {children}
-    </section>
+    </button>
   );
 }
 
@@ -933,40 +866,6 @@ function RecentChats() {
 }
 
 /* -------------------- Shared -------------------- */
-
-function StatsRow({
-  stats,
-}: {
-  stats: {
-    label: string;
-    value: string;
-    icon: typeof Eye;
-    tone: string;
-  }[];
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {stats.map((s) => (
-        <Card key={s.label} className="p-4">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                s.tone
-              )}
-            >
-              <s.icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
 
 function MyPosts({ onCreate }: { onCreate: () => void }) {
   const myPosts = useMemo<Post[]>(() => generatePosts(0, 2, "prepagos"), []);

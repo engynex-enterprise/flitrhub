@@ -11,6 +11,7 @@ import {
   Eye,
   Heart,
   Info,
+  Lock,
   Mail,
   MapPin,
   Megaphone,
@@ -38,6 +39,7 @@ import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { LoginDialog } from "@/features/auth/components/login-dialog";
 import { ProviderAds } from "@/features/profile/components/provider-ads";
+import { ProviderContent } from "@/features/profile/components/provider-content";
 import { ProviderPostStats } from "@/features/profile/components/provider-post-stats";
 import { ProviderReviews } from "@/features/profile/components/provider-reviews";
 import { ProviderStats } from "@/features/profile/components/provider-stats";
@@ -54,6 +56,7 @@ import { cn } from "@/shared/lib/utils";
 type TabId =
   | "overview"
   | "posts"
+  | "content"
   | "metrics"
   | "ads"
   | "reviews"
@@ -102,6 +105,7 @@ export function AccountProfile() {
     ? [
         { id: "overview", label: "Resumen", icon: BarChart3 },
         { id: "posts", label: "Publicaciones", icon: Sparkles },
+        { id: "content", label: "Contenido exclusivo", icon: Lock },
         { id: "metrics", label: "Estadísticas", icon: TrendingUp },
         { id: "ads", label: "Promociones", icon: Megaphone },
         { id: "reviews", label: "Reseñas", icon: Star },
@@ -181,6 +185,15 @@ export function AccountProfile() {
                 }
               >
                 <MyPosts onCreate={() => setCreateOpen(true)} />
+              </TabPanel>
+            )}
+
+            {tab === "content" && (
+              <TabPanel
+                title="Contenido exclusivo"
+                subtitle="Gestiona tu vault, suscripciones y monetización"
+              >
+                <ProviderContent />
               </TabPanel>
             )}
 

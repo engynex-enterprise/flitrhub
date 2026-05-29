@@ -48,6 +48,7 @@ import {
   AdPostBoostCard,
   AdSimilarSponsoredRow,
 } from "@/features/home/components/ads";
+import { ExclusiveContent } from "@/features/posts/components/exclusive-content";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
@@ -777,6 +778,11 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </div>
             )}
           </section>
+        </div>
+
+        {/* Exclusive content — OnlyFans-style vault */}
+        <div className="mt-12">
+          <ExclusiveContent post={post} />
         </div>
 
         {/* Sponsored slot at the bottom — pitches the "Banner en perfiles similares" product */}

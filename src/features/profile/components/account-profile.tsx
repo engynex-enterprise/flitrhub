@@ -134,7 +134,6 @@ export function AccountProfile() {
           user={user}
           isProvider={isProvider}
           onCreate={() => setCreateOpen(true)}
-          onEdit={() => setEditOpen(true)}
           avatarUrl={avatarPreview ?? user.avatar}
           onPickAvatar={(file) =>
             handlePickImage(file, setAvatarPreview, avatarPreview)
@@ -273,7 +272,6 @@ export function AccountProfile() {
         onSave={savePrefs}
         onClear={clearPrefs}
       />
-      <EditProfileDialog open={editOpen} onOpenChange={setEditOpen} />
     </div>
   );
 }
@@ -339,14 +337,12 @@ function ProfileHeader({
   user,
   isProvider,
   onCreate,
-  onEdit,
   avatarUrl,
   onPickAvatar,
 }: {
   user: SessionUser;
   isProvider: boolean;
   onCreate: () => void;
-  onEdit: () => void;
   avatarUrl: string;
   onPickAvatar: (file: File | null) => void;
 }) {
@@ -401,14 +397,11 @@ function ProfileHeader({
       </div>
 
       <div className="flex flex-wrap gap-2 pb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          className="gap-1.5"
-        >
-          <Edit3 className="h-3.5 w-3.5" />
-          Editar perfil
+        <Button asChild variant="outline" size="sm" className="gap-1.5">
+          <Link href="/settings">
+            <Edit3 className="h-3.5 w-3.5" />
+            Editar perfil
+          </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-1.5">
           <Share2 className="h-3.5 w-3.5" />
@@ -862,33 +855,6 @@ function OverviewSection({
       </div>
       {children}
     </section>
-  );
-}
-
-/* -------------------- Provider sections -------------------- */
-
-function ProviderReviews() {
-  const reviews = [
-    { author: "Carlos M.", rating: 5, body: "Excelente experiencia, profesional y discreta.", date: "Hace 2 días" },
-    { author: "Andrés P.", rating: 5, body: "Muy atenta, llegó puntual y el lugar muy cómodo.", date: "Hace 5 días" },
-    { author: "Felipe R.", rating: 4, body: "Buena comunicación, volvería sin dudarlo.", date: "Hace 1 semana" },
-  ];
-  return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {reviews.map((r) => (
-        <Card key={r.author} className="p-4">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-semibold">{r.author}</p>
-            <span className="flex shrink-0 items-center gap-1 text-xs">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-semibold">{r.rating}</span>
-            </span>
-          </div>
-          <p className="text-sm leading-relaxed text-foreground/80">{r.body}</p>
-          <p className="mt-2 text-[10px] text-muted-foreground">{r.date}</p>
-        </Card>
-      ))}
-    </div>
   );
 }
 

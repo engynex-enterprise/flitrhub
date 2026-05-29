@@ -37,9 +37,9 @@ import { Header } from "@/features/layout/components/header";
 import { CreatePostDrawer } from "@/features/posts/components/create-post-drawer";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { LoginDialog } from "@/features/auth/components/login-dialog";
-import { EditProfileDialog } from "@/features/profile/components/edit-profile-dialog";
 import { ProviderAds } from "@/features/profile/components/provider-ads";
 import { ProviderPostStats } from "@/features/profile/components/provider-post-stats";
+import { ProviderReviews } from "@/features/profile/components/provider-reviews";
 import { ProviderStats } from "@/features/profile/components/provider-stats";
 import { PreferencesDialog } from "@/features/posts/components/preferences-dialog";
 import { TIER_STYLES } from "@/features/posts/components/post-card";
@@ -69,7 +69,6 @@ export function AccountProfile() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("overview");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);

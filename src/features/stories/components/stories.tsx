@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
 import { StoryViewer } from "@/features/stories/components/story-viewer";
+import { useSession } from "@/features/auth/session";
 import { cn } from "@/shared/lib/utils";
 import type { Post } from "@/features/posts/data/mock-posts";
 
@@ -18,6 +19,7 @@ interface StoriesProps {
 export function Stories({ items }: StoriesProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const { isProvider } = useSession();
 
   const scrollBy = (dir: 1 | -1) => {
     scrollerRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
@@ -56,7 +58,7 @@ export function Stories({ items }: StoriesProps) {
         className="scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 py-1"
       >
         <AddStoryBubble />
-        <SponsoredStoryBubble />
+        {isProvider && <SponsoredStoryBubble />}
         {items.map((p, i) => (
           <StoryBubble
             key={p.id}

@@ -8,9 +8,10 @@ import { AdSidebarBlock } from "@/features/home/components/ads";
 interface SidebarProps {
   active: ServiceKey;
   onSelect: (key: ServiceKey) => void;
+  showAds?: boolean;
 }
 
-export function Sidebar({ active, onSelect }: SidebarProps) {
+export function Sidebar({ active, onSelect, showAds = false }: SidebarProps) {
   const { enabled: discreet } = useDiscreet();
 
   return (
@@ -60,7 +61,7 @@ export function Sidebar({ active, onSelect }: SidebarProps) {
         })}
 
         <div className="mt-auto space-y-3">
-          <AdSidebarBlock />
+          {showAds && <AdSidebarBlock />}
           <div className="rounded-xl border bg-muted/40 p-4">
             <p className="text-xs font-semibold text-muted-foreground">Aviso</p>
             <p className="mt-1 text-xs text-muted-foreground">

@@ -44,6 +44,7 @@ import {
 
 import { useChat } from "@/features/chat/chat-context";
 import { useFavorites } from "@/features/favorites/use-favorites";
+import { useSession } from "@/features/auth/session";
 import {
   AdPostBoostCard,
   AdSimilarSponsoredRow,
@@ -181,6 +182,7 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
   const [tab, setTab] = useState<DetailTab>("info");
   const { openChat } = useChat();
   const { favorites } = useFavorites();
+  const { isProvider } = useSession();
 
   const tier = TIER_STYLES[post.tier];
   const service = services.find((s) => s.key === post.service);
@@ -549,8 +551,8 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </Card>
             )}
 
-            {/* Boost this post — provider-facing promo */}
-            <AdPostBoostCard />
+            {/* Boost this post — only visible to providers */}
+            {isProvider && <AdPostBoostCard />}
 
             {/* Tabs */}
             <div className="-mx-1 flex gap-1 overflow-x-auto border-b">
@@ -830,10 +832,12 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
           <ExclusiveContent post={post} />
         </div>
 
-        {/* Sponsored slot at the bottom — pitches the "Banner en perfiles similares" product */}
-        <div className="mt-10">
-          <AdSimilarSponsoredRow />
-        </div>
+        {/* Sponsored slot — only visible to providers */}
+        {isProvider && (
+          <div className="mt-10">
+            <AdSimilarSponsoredRow />
+          </div>
+        )}
       </main>
 
       {/* Lightbox / fullscreen viewer */}

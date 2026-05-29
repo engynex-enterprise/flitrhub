@@ -781,7 +781,7 @@ function ProductOption({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-lg border p-2.5 text-left transition-colors",
+        "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors",
         active
           ? "border-primary bg-primary/10"
           : "border-border hover:bg-accent"
@@ -789,23 +789,31 @@ function ProductOption({
     >
       <span
         className={cn(
-          "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+          "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
           active ? "border-primary bg-primary" : "border-border"
         )}
       >
         {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
       </span>
-      <Icon className="h-4 w-4 shrink-0 text-primary" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-bold">{product.name}</p>
-        <p className="text-[10px] text-muted-foreground">{product.estReach}</p>
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <p className="text-xs font-bold">{product.name}</p>
+          <span className="text-[10px] font-semibold text-foreground">
+            {formatCOP(product.price)}
+            <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
+              /{product.durationDays === 1 ? "día" : `${product.durationDays}d`}
+            </span>
+          </span>
+        </div>
+        <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+          {product.description}
+        </p>
+        <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+          <TrendingUp className="h-2.5 w-2.5" />
+          {product.estReach}
+        </p>
       </div>
-      <span className="shrink-0 text-xs font-bold text-foreground">
-        {formatCOP(product.price)}
-        <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
-          /{product.durationDays}d
-        </span>
-      </span>
     </button>
   );
 }

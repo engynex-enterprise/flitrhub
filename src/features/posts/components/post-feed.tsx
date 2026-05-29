@@ -8,6 +8,7 @@ import { PostCard } from "@/features/posts/components/post-card";
 import { PostListItem } from "@/features/posts/components/post-list-item";
 import { PostCardSkeleton } from "@/features/posts/components/post-card-skeleton";
 import { AdInlineCard, AdRowBanner } from "@/features/home/components/ads";
+import { useSession } from "@/features/auth/session";
 import { cn } from "@/shared/lib/utils";
 import { generatePosts, type Post } from "@/features/posts/data/mock-posts";
 import type { ServiceKey } from "@/features/posts/data/services";
@@ -149,6 +150,7 @@ export function PostFeed({
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const requestId = useRef(0);
+  const { isProvider } = useSession();
 
   const loadPage = useCallback(
     async (nextPage: number, replace = false) => {
@@ -226,8 +228,10 @@ export function PostFeed({
           {visiblePosts.map((post, idx) => {
             const position = idx + 1;
             const showInlineAd =
-              position % AD_INLINE_EVERY === 0 && position % AD_ROW_EVERY !== 0;
-            const showRowAd = position % AD_ROW_EVERY === 0;
+              isProvider &&
+              position % AD_INLINE_EVERY === 0 &&
+              position % AD_ROW_EVERY !== 0;
+            const showRowAd = isProvider && position % AD_ROW_EVERY === 0;
             return (
               <Fragment key={post.id}>
                 {renderPost(post)}

@@ -30,6 +30,7 @@ import {
 } from "@/features/posts/data/mock-posts";
 import { useUserPreferences } from "@/features/posts/preferences";
 import { useFavorites } from "@/features/favorites/use-favorites";
+import { useSession } from "@/features/auth/session";
 import { discreetLabel, useDiscreet } from "@/features/discreet/use-discreet";
 import { cn } from "@/shared/lib/utils";
 
@@ -103,6 +104,7 @@ export function HomeShell() {
 
   const { favorites, toggleFavorite } = useFavorites();
   const { enabled: discreet } = useDiscreet();
+  const { isProvider } = useSession();
   const [resultCount, setResultCount] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
@@ -161,7 +163,7 @@ export function HomeShell() {
         onCreatePost={() => setCreateOpen(true)}
       />
 
-      <Sidebar active={active} onSelect={setActive} />
+      <Sidebar active={active} onSelect={setActive} showAds={isProvider} />
 
       <main
         className={cn(
@@ -199,7 +201,7 @@ export function HomeShell() {
           onOpenPreferences={() => setPrefsOpen(true)}
         />
 
-        <AdBanner className="mb-8" />
+        {isProvider && <AdBanner className="mb-8" />}
 
         {hydrated && (
           <Recomendados

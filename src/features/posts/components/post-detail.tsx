@@ -49,7 +49,10 @@ import {
   AdPostBoostCard,
   AdSimilarSponsoredRow,
 } from "@/features/home/components/ads";
-import { SimilarProfileSponsoredCard } from "@/features/home/components/sponsored-content";
+import {
+  PostSpotlightIntro,
+  SimilarProfileSponsoredCard,
+} from "@/features/home/components/sponsored-content";
 import { ExclusiveContent } from "@/features/posts/components/exclusive-content";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
@@ -216,6 +219,13 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
       <Header favoritesCount={favorites.size} />
 
       <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-12">
+        {/* Spotlight pre-roll — YouTube-style "skip ad" intro for clients */}
+        <PostSpotlightIntro
+          excludeId={post.id}
+          service={post.service}
+          city={post.city}
+        />
+
         {/* Page action row */}
         <div className="mb-6 flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5">

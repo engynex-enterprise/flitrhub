@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   Crown,
+  Film,
   Flame,
   MapPin,
   Megaphone,
@@ -36,7 +37,8 @@ export type AdProductId =
   | "cross-city"
   | "similar-banner"
   | "premium-target"
-  | "service-top";
+  | "service-top"
+  | "reel-spotlight";
 
 export interface AdProductMeta {
   id: AdProductId;
@@ -177,6 +179,18 @@ export const AD_PRODUCT_CATALOG: AdProductMeta[] = [
     price: 10_000,
     durationDays: 1,
     estReach: "~1.6k visitas/día",
+  },
+  {
+    id: "reel-spotlight",
+    name: "Reel destacado",
+    short: "Reel",
+    description:
+      "Tu video aparece como reel patrocinado en el feed por 24h, estilo Instagram/TikTok.",
+    icon: Film,
+    price: 18_000,
+    durationDays: 1,
+    estReach: "~3.2k visualizaciones",
+    badge: "Nuevo",
   },
 ];
 

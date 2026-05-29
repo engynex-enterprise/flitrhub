@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { SponsoredInMailItem } from "@/features/home/components/sponsored-content";
 import { cn } from "@/shared/lib/utils";
 import {
   hasSeededExamples,
@@ -121,24 +122,25 @@ export function ChatCenter() {
             </div>
           </div>
 
-          {filteredChats.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center px-6 text-center text-xs text-muted-foreground">
-              {chats.length === 0
-                ? "Abre el chat de un perfil online para empezar."
-                : "Ningún chat coincide con tu búsqueda."}
-            </div>
-          ) : (
-            <ul className="flex-1 divide-y divide-border/40 overflow-y-auto">
-              {filteredChats.map((c) => (
+          <ul className="flex-1 divide-y divide-border/40 overflow-y-auto">
+            <SponsoredInMailItem />
+            {filteredChats.length === 0 ? (
+              <li className="px-6 py-10 text-center text-xs text-muted-foreground">
+                {chats.length === 0
+                  ? "Abre el chat de un perfil online para empezar."
+                  : "Ningún chat coincide con tu búsqueda."}
+              </li>
+            ) : (
+              filteredChats.map((c) => (
                 <ChatListItem
                   key={c.peer.id}
                   session={c}
                   selected={c.peer.id === selectedId}
                   onSelect={() => setSelectedId(c.peer.id)}
                 />
-              ))}
-            </ul>
-          )}
+              ))
+            )}
+          </ul>
         </aside>
 
         {/* Main panel */}

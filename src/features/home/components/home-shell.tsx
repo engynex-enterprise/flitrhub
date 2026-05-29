@@ -16,7 +16,11 @@ import { AdBanner } from "@/features/home/components/ads";
 import {
   HomeMainBanner,
   MatchedPreferenceBanner,
+  PicksForYouCarousel,
   PushNotificationToast,
+  SearchSponsoredResult,
+  SponsoredReelSpotlight,
+  StickyBottomBar,
   TopOfServicePin,
 } from "@/features/home/components/sponsored-content";
 import { WelcomeAdModal } from "@/features/home/components/welcome-ad-modal";
@@ -236,9 +240,28 @@ export function HomeShell() {
 
         <Destacados posts={featured} />
 
+        {/* Picks para ti — horizontal sponsored carousel inspired by Spotify/Netflix */}
+        <div className="mb-8">
+          <PicksForYouCarousel service={active} city={city} />
+        </div>
+
+        {/* Reel destacado — vertical sponsored reel inspired by Instagram/TikTok */}
+        <div className="mb-8">
+          <SponsoredReelSpotlight service={active} city={city} />
+        </div>
+
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold">Todos los perfiles</h2>
           <ViewSwitcher value={viewMode} onChange={setViewMode} />
+        </div>
+
+        {/* Búsqueda destacada — sponsored top result when filters are active */}
+        <div className="mb-4">
+          <SearchSponsoredResult
+            service={active}
+            city={city}
+            active={activeFilterCount > 0}
+          />
         </div>
 
         {/* Top del servicio — pinned sponsored profile above the feed */}
@@ -283,6 +306,7 @@ export function HomeShell() {
 
       <WelcomeAdModal />
       <PushNotificationToast />
+      <StickyBottomBar />
     </div>
   );
 }

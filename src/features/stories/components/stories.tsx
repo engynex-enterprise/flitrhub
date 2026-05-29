@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { DiscreetCover } from "@/features/posts/components/discreet-cover";
@@ -55,6 +56,7 @@ export function Stories({ items }: StoriesProps) {
         className="scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 py-1"
       >
         <AddStoryBubble />
+        <SponsoredStoryBubble />
         {items.map((p, i) => (
           <StoryBubble
             key={p.id}
@@ -106,6 +108,29 @@ function StoryBubble({ post, onClick }: { post: Post; onClick: () => void }) {
         {post.name.split(" ")[0]}
       </span>
     </button>
+  );
+}
+
+function SponsoredStoryBubble() {
+  return (
+    <Link
+      href="/profile"
+      className="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 focus:outline-none"
+    >
+      <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-gold p-[2.5px] shadow-md transition-transform group-hover:scale-105">
+        <span className="block h-full w-full rounded-full bg-background p-[2px]">
+          <span className="bg-gradient-sensual relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
+            <Sparkles className="h-6 w-6 text-gold" />
+          </span>
+        </span>
+        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider text-amber-950 shadow">
+          Ad
+        </span>
+      </span>
+      <span className="w-full truncate text-center text-[11px] font-semibold text-gold">
+        Promociona
+      </span>
+    </Link>
   );
 }
 

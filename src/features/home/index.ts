@@ -6,6 +6,12 @@ export { CitySelector } from "./components/city-selector";
 export {
   AdBanner,
   AdInlineCard,
+  AdPostBoostCard,
   AdRowBanner,
   AdSidebarBlock,
+  AdSimilarSponsoredRow,
+  AD_PRODUCT_CATALOG,
+  PromotedTag,
+  getProduct,
 } from "./components/ads";
+export type { AdProductId, AdProductMeta } from "./components/ads";

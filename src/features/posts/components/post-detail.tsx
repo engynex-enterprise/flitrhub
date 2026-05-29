@@ -44,6 +44,10 @@ import {
 
 import { useChat } from "@/features/chat/chat-context";
 import { useFavorites } from "@/features/favorites/use-favorites";
+import {
+  AdPostBoostCard,
+  AdSimilarSponsoredRow,
+} from "@/features/home/components/ads";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
@@ -499,6 +503,9 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </Card>
             )}
 
+            {/* Boost this post — provider-facing promo */}
+            <AdPostBoostCard />
+
             {/* Tabs */}
             <div className="-mx-1 flex gap-1 overflow-x-auto border-b">
               {(
@@ -770,6 +777,11 @@ export function PostDetail({ post, gallery }: PostDetailProps) {
               </div>
             )}
           </section>
+        </div>
+
+        {/* Sponsored slot at the bottom — pitches the "Banner en perfiles similares" product */}
+        <div className="mt-10">
+          <AdSimilarSponsoredRow />
         </div>
       </main>
 

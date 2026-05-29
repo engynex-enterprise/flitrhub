@@ -11,7 +11,6 @@ import {
   MousePointerClick,
   Phone,
   Plus,
-  Rocket,
   Search,
   Sparkles,
   Target,
@@ -24,6 +23,10 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
+import {
+  AD_PRODUCT_CATALOG,
+  type AdProductMeta,
+} from "@/features/home/components/ads";
 
 import {
   BarChartCmp,
@@ -102,79 +105,7 @@ const ACTIVE_CAMPAIGNS: Campaign[] = [
   },
 ];
 
-interface AdProduct {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  durationDays: number;
-  icon: typeof Megaphone;
-  badge?: string;
-  highlight?: boolean;
-  estReach: string;
-}
-
-const PRODUCTS: AdProduct[] = [
-  {
-    id: "p1",
-    name: "Top de búsqueda",
-    description:
-      "Aparece en las primeras 3 posiciones para tu ciudad y servicio.",
-    price: 12_000,
-    durationDays: 1,
-    icon: Search,
-    estReach: "~2.5k visitas/día",
-    highlight: true,
-  },
-  {
-    id: "p2",
-    name: "Destacado en home",
-    description: "Tu publicación se muestra en el carrusel principal.",
-    price: 10_000,
-    durationDays: 1,
-    icon: Flame,
-    estReach: "~1.8k visitas/día",
-  },
-  {
-    id: "p3",
-    name: "Story sponsorizada",
-    description: "Aparece en stories durante 24h con prioridad.",
-    price: 15_000,
-    durationDays: 1,
-    icon: Sparkles,
-    badge: "Nuevo",
-    estReach: "~3k visualizaciones",
-  },
-  {
-    id: "p4",
-    name: "Boost de ciudad",
-    description: "Maximiza visibilidad en una ciudad específica.",
-    price: 8_000,
-    durationDays: 1,
-    icon: MapPin,
-    estReach: "~1.2k visitas/día",
-  },
-  {
-    id: "p5",
-    name: "Upgrade a Platino",
-    description:
-      "Insignia Platino + mejor posicionamiento + filtros exclusivos durante 30 días.",
-    price: 200_000,
-    durationDays: 30,
-    icon: Crown,
-    badge: "Más popular",
-    estReach: "+45% conversión esperada",
-  },
-  {
-    id: "p6",
-    name: "Re-impulso semanal",
-    description: "Aparece como recién publicada durante 7 días.",
-    price: 45_000,
-    durationDays: 7,
-    icon: Rocket,
-    estReach: "+30% alcance",
-  },
-];
+const PRODUCTS: AdProductMeta[] = AD_PRODUCT_CATALOG;
 
 const HISTORY = [
   { name: "Top búsqueda · abr", days: 14, spent: 168_000, roi: 3.2 },
@@ -515,7 +446,7 @@ function CampaignMini({
 
 /* -------------------- Product card -------------------- */
 
-function AdProductCard({ product }: { product: AdProduct }) {
+function AdProductCard({ product }: { product: AdProductMeta }) {
   const Icon = product.icon;
   return (
     <Card
